@@ -174,13 +174,15 @@ function normalizeState(raw) {
   };
 }
 
+const DEFAULT_PUBLIC_PERIOD_ID = "2026";
+
 function buildStateForBackend(state) {
   if (!state) return state;
 
   const { members, ...rest } = state;
   const freshPeriods = getPeriods();
   const freshActivePeriodId = String(
-    getCurrentPeriodId() || state?.activePeriodId || state?.activePeriod || "2025"
+    state?.activePeriodId || state?.activePeriod || DEFAULT_PUBLIC_PERIOD_ID
   );
 
   return {
@@ -209,8 +211,20 @@ function mergeBackendWithLocalState(localState, backendState) {
       ...(normalizedLocal?.session || {}),
     },
     members: Array.isArray(normalizedLocal?.members) ? normalizedLocal.members : [],
-    activePeriodId: String(getCurrentPeriodId() || "2025"),
-    activePeriod: String(getCurrentPeriodId() || "2025"),
+    activePeriodId: String(
+      normalizedBackend?.activePeriodId ||
+        normalizedBackend?.activePeriod ||
+        normalizedLocal?.activePeriodId ||
+        normalizedLocal?.activePeriod ||
+        DEFAULT_PUBLIC_PERIOD_ID
+    ),
+    activePeriod: String(
+      normalizedBackend?.activePeriodId ||
+        normalizedBackend?.activePeriod ||
+        normalizedLocal?.activePeriodId ||
+        normalizedLocal?.activePeriod ||
+        DEFAULT_PUBLIC_PERIOD_ID
+    ),
     periods: getPeriods(),
   });
 }
@@ -258,8 +272,8 @@ export default function App() {
     return normalizeState({
       ...saved,
       periods: getPeriods(),
-      activePeriodId: getCurrentPeriodId(),
-      activePeriod: getCurrentPeriodId(),
+      activePeriodId: DEFAULT_PUBLIC_PERIOD_ID,
+      activePeriod: DEFAULT_PUBLIC_PERIOD_ID,
       session: token
         ? {
             ...(saved?.session || {}),
@@ -287,8 +301,8 @@ export default function App() {
     const nextState = normalizeState({
       ...local,
       periods: getPeriods(),
-      activePeriodId: getCurrentPeriodId(),
-      activePeriod: getCurrentPeriodId(),
+      activePeriodId: local?.activePeriodId || local?.activePeriod || DEFAULT_PUBLIC_PERIOD_ID,
+      activePeriod: local?.activePeriodId || local?.activePeriod || DEFAULT_PUBLIC_PERIOD_ID,
       session: makeLoggedOutSession(local?.session),
     });
 
@@ -303,9 +317,7 @@ export default function App() {
     const localState = normalizeState(loadState() ?? stateRef.current ?? makeSeed());
 
     if (!token || !localState?.session?.isAuthed) {
-      const activePeriodId = String(
-        getCurrentPeriodId() || localState?.activePeriodId || localState?.activePeriod || "2025"
-      );
+    const activePeriodId = DEFAULT_PUBLIC_PERIOD_ID;
 
       try {
         const backendData = await loadBackendState(activePeriodId);
@@ -339,7 +351,12 @@ export default function App() {
     }
 
     const activePeriodId = String(
-      getCurrentPeriodId() || localState?.activePeriodId || localState?.activePeriod || "2025"
+      localState?.session?.periodId ||
+        localState?.session?.period ||
+        localState?.activePeriodId ||
+        localState?.activePeriod ||
+        getCurrentPeriodId() ||
+        DEFAULT_PUBLIC_PERIOD_ID
     );
 
     try {
@@ -423,12 +440,11 @@ export default function App() {
     if (!token || !state?.session?.isAuthed) return;
 
     const periodId = String(
-      state?.activePeriodId ||
-        state?.activePeriod ||
-        getCurrentPeriodId() ||
-        state?.session?.periodId ||
+      state?.session?.periodId ||
         state?.session?.period ||
-        "2025"
+        state?.activePeriodId ||
+        state?.activePeriod ||
+        DEFAULT_PUBLIC_PERIOD_ID
     );
 
     const timeout = setTimeout(() => {
