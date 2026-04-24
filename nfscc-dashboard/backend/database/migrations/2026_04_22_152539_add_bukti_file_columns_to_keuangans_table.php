@@ -9,8 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('keuangans', function (Blueprint $table) {
-            $table->string('bukti_path')->nullable()->after('bukti_tipe');
-            $table->text('bukti_url')->nullable()->after('bukti_path');
+            $table->string('bukti_tipe')->nullable();
+            $table->string('bukti_path')->nullable();
+            $table->text('bukti_url')->nullable();
         });
     }
 
