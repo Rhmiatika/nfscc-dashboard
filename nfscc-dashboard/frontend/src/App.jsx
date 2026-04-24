@@ -4,7 +4,7 @@ import { getCurrentPeriodId, getPeriods, loadState, saveState } from "./storage"
 import { loadBackendState, saveBackendState } from "./Services/appStateService";
 import { listMembersApi } from "./Services/memberService";
 import { makeSeed } from "./seed";
-import { getApiToken, clearApiToken } from "./lib/authstorage";
+import { getApiToken, clearApiToken } from "./lib/authStorage";
 
 import NavbarLayout from "./components/Navbar";
 
