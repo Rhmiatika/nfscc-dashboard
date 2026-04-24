@@ -11,6 +11,12 @@ use App\Http\Controllers\TemplateSuratController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AppStateController;
 
+Route::get('/', function () {
+    return response()->json([
+        'status' => 'API NFSCC jalan'
+    ]);
+});
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/create-password', [AuthController::class, 'createPassword']);
