@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Global layout + typography tuning
+  - Make the app truly fill the viewport
+  - Slightly reduce the default perceived font size
+*/
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+}
+
+/* =======================================================
+   Dark mode support untuk input date (SEMUA PAGE)
+   ======================================================= */
+
+.dark-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 1;
+  cursor: pointer;
+}
+
+.dark-date-input::-webkit-clear-button {
+  filter: invert(1);
+}
+
+.dark-date-input::-webkit-inner-spin-button {
+  filter: invert(1);
+}
+
+/* =======================================================
+   KHUSUS PAGE KEUANGAN
+   Menghilangkan icon kalender native supaya tidak dobel
+   ======================================================= */
+
+.no-native-calendar-icon::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.no-native-calendar-icon::-webkit-clear-button {
+  opacity: 0;
+}
+
+.no-native-calendar-icon::-webkit-inner-spin-button {
+  opacity: 0;
+}
