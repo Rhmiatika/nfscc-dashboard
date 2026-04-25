@@ -102,15 +102,15 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     try {
       setLoading(true);
       const [members, kegiatan, proker] = await Promise.all([
-        listArchivedMembersApi(activePeriodId).catch((err) => {
+        listArchivedMembersApi().catch((err) => {
           console.error("Archived members error:", err);
           return [];
         }),
-        listArchivedKegiatanApi(activePeriodId).catch((err) => {
+        listArchivedKegiatanApi().catch((err) => {
           console.error("Archived kegiatan error:", err);
           return [];
         }),
-        listArchivedProkerApi(activePeriodId).catch((err) => {
+        listArchivedProkerApi().catch((err) => {
           console.error("Archived proker error:", err);
           return [];
         }),
