@@ -341,7 +341,14 @@ export default function App() {
           activePeriodId,
           activePeriod: activePeriodId,
           periods: getPeriods(),
-          members: Array.isArray(freshMembers) ? freshMembers : [],
+          members:
+            Array.isArray(freshMembers) && freshMembers.length > 0
+              ? freshMembers
+              : Array.isArray(mergedState?.members)
+              ? mergedState.members.filter(
+                  (m) => String(m.periodId || m.periode || "") === String(activePeriodId)
+                )
+              : [],
           session: makeLoggedOutSession({
             periodId: activePeriodId,
             period: activePeriodId,
@@ -358,7 +365,7 @@ export default function App() {
           activePeriodId,
           activePeriod: activePeriodId,
           periods: getPeriods(),
-          members: [],
+          members: Array.isArray(localState?.members) ? localState.members : [],
           session: makeLoggedOutSession({
             periodId: activePeriodId,
             period: activePeriodId,
@@ -396,7 +403,14 @@ export default function App() {
         activePeriodId,
         activePeriod: activePeriodId,
         periods: getPeriods(),
-        members: Array.isArray(freshMembers) ? freshMembers : [],
+        members:
+          Array.isArray(freshMembers) && freshMembers.length > 0
+            ? freshMembers
+            : Array.isArray(nextState?.members)
+            ? nextState.members.filter(
+                (m) => String(m.periodId || m.periode || "") === String(activePeriodId)
+              )
+            : [],
       });
 
       setState(nextState);
