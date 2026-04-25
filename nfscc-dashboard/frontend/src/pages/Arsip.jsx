@@ -90,6 +90,8 @@ export default function ArsipPage({ state, setState, theme, ui }) {
   const [loading, setLoading] = useState(false);
   const isAuthed = !!state?.session?.isAuthed;
   const canRestoreArchive = isAuthed;
+  const role = String(state?.session?.role || "").toLowerCase();
+  const canViewLoginId = isAuthed && (role === "admin" || role === "ec");
   const activePeriodId = String(
     state?.activePeriodId ||
       state?.activePeriod ||
@@ -404,7 +406,9 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                   <div className={cx("mt-3 space-y-1 text-sm", ui.textMuted, "flex-1")}>
                     {item.category === "anggota" ? (
                       <>
+                        {canViewLoginId && (
                         <div>Login ID: {item.loginId || "-"}</div>
+                        )}
                         <div>Divisi: {item.divisi || "-"}</div>
                         <div>Posisi: {item.position || "-"}</div>
                         <div>Tahun Angkatan: {item.tahunAngkatan || "-"}</div>
