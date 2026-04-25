@@ -36,7 +36,7 @@ function getActivePeriodId(state) {
       state?.session?.activePeriodId ||
       state?.session?.periodId ||
       state?.session?.period ||
-      "2025"
+      "2026"
   );
 }
 

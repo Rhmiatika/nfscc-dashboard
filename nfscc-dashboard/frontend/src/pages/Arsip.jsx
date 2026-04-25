@@ -90,20 +90,27 @@ export default function ArsipPage({ state, setState, theme, ui }) {
   const [loading, setLoading] = useState(false);
   const isAuthed = !!state?.session?.isAuthed;
   const canRestoreArchive = isAuthed;
+  const activePeriodId = String(
+    state?.activePeriodId ||
+      state?.activePeriod ||
+      state?.session?.periodId ||
+      state?.session?.period ||
+      "2026"
+  );
 
   async function loadAllArchiveData() {
     try {
       setLoading(true);
       const [members, kegiatan, proker] = await Promise.all([
-        listArchivedMembersApi().catch((err) => {
+        listArchivedMembersApi(activePeriodId).catch((err) => {
           console.error("Archived members error:", err);
           return [];
         }),
-        listArchivedKegiatanApi().catch((err) => {
+        listArchivedKegiatanApi(activePeriodId).catch((err) => {
           console.error("Archived kegiatan error:", err);
           return [];
         }),
-        listArchivedProkerApi().catch((err) => {
+        listArchivedProkerApi(activePeriodId).catch((err) => {
           console.error("Archived proker error:", err);
           return [];
         }),
@@ -119,7 +126,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
   useEffect(() => {
     loadAllArchiveData();
-  }, []);
+  }, [activePeriodId]);
 
   const anggotaItems = useMemo(() => {
     return archivedMembers.map((m) => ({

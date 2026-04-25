@@ -86,7 +86,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       state?.session?.activePeriodId ||
       state?.session?.periodId ||
       state?.session?.period ||
-      "2025"
+      "2026"
   );
 
   const [loadingProker, setLoadingProker] = useState(false);
@@ -186,6 +186,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   }, [canChooseDivisi, myDivisi]);
 
   useEffect(() => {
+    if (!activePeriodId) return;
     loadProker();
   }, [activePeriodId]);
 
@@ -221,10 +222,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       : "text-blue-600 hover:text-blue-700 underline";
 
   function isSameActivePeriod(item) {
-    if (item?.periodId) {
-      return String(item.periodId) === activePeriodId;
-    }
-    return true;
+    return String(item?.periodId || "") === activePeriodId;
   }
 
   async function clearProkerPage() {
@@ -340,7 +338,12 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
 
       setState((prev) => ({
         ...prev,
-        proker: [...(Array.isArray(prev.proker) ? prev.proker : []), created],
+        proker: [
+          ...(Array.isArray(prev.proker) ? prev.proker : []).filter(
+            (p) => String(p.id) !== String(created.id)
+          ),
+          created,
+        ],
       }));
 
       resetForm();

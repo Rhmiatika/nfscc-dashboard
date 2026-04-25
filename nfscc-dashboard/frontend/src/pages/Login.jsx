@@ -123,8 +123,7 @@ export default function LoginPage({
   const currentActivePeriodId = String(
     state?.activePeriodId ||
     state?.activePeriod ||
-    getCurrentPeriodId() ||
-    "2025"
+    "2026"
   );
   const currentActivePeriod =
     periods.find((item) => String(item.id) === currentActivePeriodId) ||
@@ -228,17 +227,15 @@ export default function LoginPage({
       return;
     }
 
-    const detectedPeriodId = String(
-      getCurrentPeriodId() || currentActivePeriodId || "2025"
-    );
+    const userPeriod = String(user?.periode || "2026");
 
-    const periodState = loadStateForPeriod(detectedPeriodId);
+    const periodState = loadStateForPeriod(userPeriod);
 
     const role = String(user?.role || "staff").toLowerCase();
     const isAdmin = role === "admin";
     const isEC = role === "ec";
 
-    applyLoggedInState(detectedPeriodId, periodState, {
+    applyLoggedInState(userPeriod, periodState, {
       isAuthed: true,
       role,
       isAdmin,

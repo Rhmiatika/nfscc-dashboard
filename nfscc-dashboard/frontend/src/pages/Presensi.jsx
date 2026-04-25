@@ -105,15 +105,24 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
   const prokerList = Array.isArray(state?.proker) ? state.proker : [];
   const presensiList = Array.isArray(state?.presensi) ? state.presensi : [];
   const activePeriod = String(
-  state?.activePeriod || state?.session?.periodId || state?.session?.period || "2026"
+    state?.activePeriodId ||
+      state?.activePeriod ||
+      state?.session?.periodId ||
+      state?.session?.period ||
+      "2026"
   );
 
   async function loadPresensi() {
     try {
       const data = await listPresensiApi(activePeriod);
+
+      const filtered = data.filter(
+        (item) => String(item.periode || item.periodId || "") === String(activePeriod)
+      );
+
       setState((prev) => ({
         ...prev,
-        presensi: data,
+        presensi: filtered,
       }));
     } catch (err) {
       console.error("Gagal memuat presensi:", err);
@@ -121,7 +130,8 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
   }
 
   useEffect(() => {
-  loadPresensi();
+    if (!activePeriod) return;
+    loadPresensi();
   }, [activePeriod]);
 
   const softBoxClass = cx(
@@ -305,15 +315,13 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
     const picked = acaraOptions.find((o) => o.value === value);
     if (!picked) return null;
 
-    const pickedTitle = String(picked.title || "").trim().toLowerCase();
-    if (!pickedTitle) return null;
-
     return presensiList.find((p) => {
-      const isInternal = String(p?.type || "").trim().toLowerCase() === "internal";
-      const sameTitle =
-        String(p?.title || "").trim().toLowerCase() === pickedTitle;
+      const isInternal = String(p?.type || "").toLowerCase() === "internal";
 
-      return isInternal && sameTitle;
+      const sameSource =
+        String(p?.source_id || "") === String(picked.sourceId || "");
+
+      return isInternal && sameSource;
     }) || null;
   };
 
@@ -506,6 +514,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
       }, {}),
       created_by: me?.loginId || "admin",
       periode: activePeriod,
+      source_id: selectedAcara?.sourceId || null,
     };
 
     try {
@@ -541,7 +550,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
       p?.type,
       p?.date,
       p?.location,
-      getMember(p?.createdBy)?.name || p?.createdBy,
+      getMember(p?.created_by)?.name || p?.created_by,
     ]
       .filter(Boolean)
       .join(" ")
@@ -706,19 +715,20 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
       if (!title) return;
     }
 
-    const payload = {
-      title,
-      type: eType,
-      date: eDate,
-      location: String(eLocation || "").trim() || "-",
-      hadir: eHadirIds,
-      izin: eIzinIds,
-      izin_reasons: eIzinIds.reduce((acc, id) => {
-        acc[id] = String(eIzinReasons[id] || "").trim();
-        return acc;
-      }, {}),
-      periode: activePeriod,
-    };
+  const payload = {
+    title,
+    type: eType,
+    date: eDate,
+    location: String(eLocation || "").trim() || "-",
+    hadir: eHadirIds,
+    izin: eIzinIds,
+    izin_reasons: eIzinIds.reduce((acc, id) => {
+      acc[id] = String(eIzinReasons[id] || "").trim();
+      return acc;
+    }, {}),
+    periode: activePeriod,
+    source_id: selectedEditAcara?.sourceId || null,
+  };
 
     try {
       const updated = await updatePresensiApi(editId, payload);

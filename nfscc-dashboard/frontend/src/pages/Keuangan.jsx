@@ -309,11 +309,9 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
       return String(
         source?.activePeriodId ||
           source?.activePeriod ||
-          source?.session?.currentPeriodId ||
-          source?.session?.activePeriodId ||
           source?.session?.periodId ||
           source?.session?.period ||
-          "2025"
+          "2026"
       );
     }
 
@@ -351,8 +349,13 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
       setLoadingFinance(true);
 
       const rows = await listKeuanganApi(periodKey);
-      const kasRows = rows.filter((x) => x.kind === "kas");
-      const nonKasRows = rows.filter((x) => x.kind !== "kas");
+
+      const filteredRows = rows.filter(
+        (x) => String(x.periodId || x.periode) === String(periodKey)
+      );
+
+      const kasRows = filteredRows.filter((x) => x.kind === "kas");
+      const nonKasRows = filteredRows.filter((x) => x.kind !== "kas");
 
       setState((prev) => {
         const prevFinance = readFinanceSlice(prev);
@@ -360,8 +363,8 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
         return writeFinanceSlice(prev, {
           ...prevFinance,
           saldoAwal: 0,
-          kasPayments: kasRows,
-          transaksi: nonKasRows,
+          kasPayments: kasRows || [],
+          transaksi: nonKasRows || [],
         });
       });
 
@@ -529,6 +532,11 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
   const [syncError, setSyncError] = useState("");
 
   const kasNominalPerBulan = 15000;
+
+  useEffect(() => {
+    if (!periodKey) return;
+    loadFinance();
+  }, [periodKey]);
 
   useEffect(() => {
     if (isFinanceManager) {
@@ -792,10 +800,6 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
       setSyncError(err?.message || "Gagal sinkron dari spreadsheet.");
     }
   }
-
-  useEffect(() => {
-    loadFinance();
-  }, [periodKey]);
 
   useEffect(() => {
     setKasTanggal(getDefaultDateByPeriod(periodKey));

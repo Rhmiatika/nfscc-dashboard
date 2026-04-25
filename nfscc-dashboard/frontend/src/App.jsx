@@ -182,7 +182,9 @@ function buildStateForBackend(state) {
   const { members, ...rest } = state;
   const freshPeriods = getPeriods();
   const freshActivePeriodId = String(
-    state?.activePeriodId || state?.activePeriod || DEFAULT_PUBLIC_PERIOD_ID
+    state?.session?.periodId || 
+    state?.activePeriodId || 
+    DEFAULT_PUBLIC_PERIOD_ID
   );
 
   return {
@@ -206,24 +208,29 @@ function mergeBackendWithLocalState(localState, backendState) {
   return normalizeState({
     ...normalizedLocal,
     ...normalizedBackend,
-    session: {
-      ...(normalizedBackend?.session || {}),
-      ...(normalizedLocal?.session || {}),
-    },
+    session: normalizedLocal?.session?.isAuthed
+      ? {
+          ...(normalizedBackend?.session || {}),
+          ...(normalizedLocal?.session || {}),
+        }
+      : makeLoggedOutSession(normalizedBackend?.session),
+
     members: Array.isArray(normalizedLocal?.members) ? normalizedLocal.members : [],
     activePeriodId: String(
-      normalizedBackend?.activePeriodId ||
-        normalizedBackend?.activePeriod ||
-        normalizedLocal?.activePeriodId ||
-        normalizedLocal?.activePeriod ||
-        DEFAULT_PUBLIC_PERIOD_ID
+      normalizedLocal?.session?.isAuthed
+        ? normalizedLocal?.session?.periodId ||
+            normalizedLocal?.session?.period ||
+            normalizedBackend?.activePeriodId ||
+            DEFAULT_PUBLIC_PERIOD_ID
+        : DEFAULT_PUBLIC_PERIOD_ID
     ),
     activePeriod: String(
-      normalizedBackend?.activePeriodId ||
-        normalizedBackend?.activePeriod ||
-        normalizedLocal?.activePeriodId ||
-        normalizedLocal?.activePeriod ||
-        DEFAULT_PUBLIC_PERIOD_ID
+      normalizedLocal?.session?.isAuthed
+        ? normalizedLocal?.session?.periodId ||
+            normalizedLocal?.session?.period ||
+            normalizedBackend?.activePeriod ||
+            DEFAULT_PUBLIC_PERIOD_ID
+        : DEFAULT_PUBLIC_PERIOD_ID
     ),
     periods: getPeriods(),
   });
@@ -301,8 +308,8 @@ export default function App() {
     const nextState = normalizeState({
       ...local,
       periods: getPeriods(),
-      activePeriodId: local?.activePeriodId || local?.activePeriod || DEFAULT_PUBLIC_PERIOD_ID,
-      activePeriod: local?.activePeriodId || local?.activePeriod || DEFAULT_PUBLIC_PERIOD_ID,
+      activePeriodId: DEFAULT_PUBLIC_PERIOD_ID,
+      activePeriod: DEFAULT_PUBLIC_PERIOD_ID,
       session: makeLoggedOutSession(local?.session),
     });
 

@@ -33,6 +33,11 @@ Route::get('/kegiatan-archived', [KegiatanController::class, 'archivedIndex']);
 Route::get('/template-surat', [TemplateSuratController::class, 'index']);
 Route::get('/template-surat/{template_surat}', [TemplateSuratController::class, 'show']);
 
+Route::get('/proker', [ProkerController::class, 'index']);
+Route::get('/kegiatan', [KegiatanController::class, 'index']);
+Route::get('/presensi', [PresensiController::class, 'index']);
+Route::get('/keuangan', [KeuanganController::class, 'index']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('members', MemberController::class);
     Route::post('/members/{id}/reset-password', [MemberController::class, 'resetPassword']);
@@ -45,10 +50,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/kegiatan/{id}/archive', [KegiatanController::class, 'archive']);
     Route::post('/kegiatan/{id}/restore', [KegiatanController::class, 'restore']);
 
-    Route::apiResource('kegiatan', KegiatanController::class);
-    Route::apiResource('presensi', PresensiController::class);
-    Route::apiResource('keuangan', KeuanganController::class);
-    Route::apiResource('proker', ProkerController::class);
+    Route::apiResource('kegiatan', KegiatanController::class)->except(['index']);
+    Route::apiResource('presensi', PresensiController::class)->except(['index']);
+    Route::apiResource('keuangan', KeuanganController::class)->except(['index']);
+    Route::apiResource('proker', ProkerController::class)->except(['index']);
 
     Route::post('/template-surat', [TemplateSuratController::class, 'store']);
     Route::put('/template-surat/{template_surat}', [TemplateSuratController::class, 'update']);
