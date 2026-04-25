@@ -38,8 +38,11 @@ Route::get('/kegiatan', [KegiatanController::class, 'index']);
 Route::get('/presensi', [PresensiController::class, 'index']);
 Route::get('/keuangan', [KeuanganController::class, 'index']);
 
+Route::get('/members', [MemberController::class, 'index']);
+Route::get('/members/{member}', [MemberController::class, 'show']);
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('members', MemberController::class);
+    Route::apiResource('members', MemberController::class)->except(['index', 'show']);
     Route::post('/members/{id}/reset-password', [MemberController::class, 'resetPassword']);
     Route::post('/members/{id}/archive', [MemberController::class, 'archive']);
     Route::post('/members/{id}/restore', [MemberController::class, 'restore']);
