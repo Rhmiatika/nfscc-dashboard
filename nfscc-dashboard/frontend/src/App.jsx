@@ -327,14 +327,25 @@ export default function App() {
     const activePeriodId = DEFAULT_PUBLIC_PERIOD_ID;
 
       try {
-        const backendData = await loadBackendState(activePeriodId);
+        const [backendData, freshMembers] = await Promise.all([
+          loadBackendState(activePeriodId),
+          listMembersApi(activePeriodId).catch(() => []),
+        ]);
+
+        const mergedState = backendData
+          ? mergeBackendWithLocalState(localState, backendData)
+          : localState;
 
         const nextState = normalizeState({
-          ...(backendData ? mergeBackendWithLocalState(localState, backendData) : localState),
+          ...mergedState,
           activePeriodId,
           activePeriod: activePeriodId,
           periods: getPeriods(),
-          session: makeLoggedOutSession(localState?.session),
+          members: Array.isArray(freshMembers) ? freshMembers : [],
+          session: makeLoggedOutSession({
+            periodId: activePeriodId,
+            period: activePeriodId,
+          }),
         });
 
         setState(nextState);
@@ -347,7 +358,11 @@ export default function App() {
           activePeriodId,
           activePeriod: activePeriodId,
           periods: getPeriods(),
-          session: makeLoggedOutSession(localState?.session),
+          members: [],
+          session: makeLoggedOutSession({
+            periodId: activePeriodId,
+            period: activePeriodId,
+          }),
         });
 
         setState(safeLocal);
