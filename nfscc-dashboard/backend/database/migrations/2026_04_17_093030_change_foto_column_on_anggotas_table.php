@@ -9,11 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // DB::statement("ALTER TABLE anggotas MODIFY foto LONGTEXT NULL");
+      
     }
 
     public function down(): void
     {
-        // DB::statement("ALTER TABLE anggotas MODIFY foto VARCHAR(255) NULL");
+  
     }
 };
