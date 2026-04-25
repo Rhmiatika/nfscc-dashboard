@@ -100,6 +100,34 @@ export default function ArsipPage({ state, setState, theme, ui }) {
       "2026"
   );
 
+  const memberNameByLoginId = useMemo(() => {
+    const map = new Map();
+
+    const sources = [
+      ...(Array.isArray(state?.members) ? state.members : []),
+      ...(Array.isArray(archivedMembers) ? archivedMembers : []),
+    ];
+
+    sources.forEach((m) => {
+      const loginId = String(m.loginId || m.email || "").trim().toLowerCase();
+      const name = String(m.name || m.nama || "").trim();
+
+      if (loginId && name) {
+        map.set(loginId, name);
+      }
+    });
+
+    return map;
+  }, [state?.members, archivedMembers]);
+
+  function getPicName(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "-";
+
+    const key = raw.toLowerCase();
+    return memberNameByLoginId.get(key) || raw;
+  }
+
   async function loadAllArchiveData() {
     try {
       setLoading(true);
@@ -174,7 +202,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
       tanggal: p.date || "",
       divisi: p.divisi || "",
       status: p.status || "",
-      pic: p.pic || "",
+      pic: getPicName(p.pic),
       hidden: !!p.hiddenFromProkerPage,
       raw: p,
       links: [
@@ -183,7 +211,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         { label: "Catatan & Evaluasi", url: normalizeUrl(p.notulensiLink) },
       ].filter((x) => x.url),
     }));
-  }, [allProker]);
+  }, [allProker, memberNameByLoginId]);
 
   const kegiatanPeriods = useMemo(() => {
     return Array.from(new Set(kegiatanItems.map((x) => x.periodId).filter(Boolean))).sort((a, b) => Number(b) - Number(a));

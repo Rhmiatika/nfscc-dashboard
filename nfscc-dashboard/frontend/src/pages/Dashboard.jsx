@@ -131,6 +131,21 @@ export default function DashboardPage({ state, setState, theme, ui }) {
     state?.activePeriodId || state?.activePeriod || "2025"
   );
 
+  const memberNameByLoginId = useMemo(() => {
+    const map = new Map();
+
+    (Array.isArray(state?.members) ? state.members : []).forEach((m) => {
+      const loginId = String(m.loginId || m.email || "").trim().toLowerCase();
+      const name = String(m.name || m.nama || "").trim();
+
+      if (loginId && name) {
+        map.set(loginId, name);
+      }
+    });
+
+    return map;
+  }, [state?.members]);
+
 const activePeriod = periods.find(
   (item) => String(item.id) === activePeriodId
 );
@@ -145,8 +160,10 @@ const activePeriodLabel =
     (me?.name || "").trim().split(" ").filter(Boolean)[0] || "Kak";
 
   function getMemberName(loginId) {
-    const member = members.find((m) => String(m.loginId) === String(loginId));
-    return member?.name || loginId || "-";
+    const key = String(loginId || "").trim().toLowerCase();
+    if (!key) return "-";
+
+    return memberNameByLoginId.get(key) || loginId;
   }
 
   const thClass = "whitespace-nowrap px-4 py-2 text-left";
