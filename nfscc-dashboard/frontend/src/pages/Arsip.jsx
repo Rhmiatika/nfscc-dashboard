@@ -2,14 +2,19 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   listArchivedMembersApi,
   restoreMemberApi,
+  deleteMemberApi,
 } from "../Services/memberService";
+
 import {
   listArchivedKegiatanApi,
   restoreKegiatanApi,
+  deleteKegiatanApi,
 } from "../Services/kegiatanService";
+
 import {
   listArchivedProkerApi,
   restoreProkerApi,
+  deleteProkerApi,
 } from "../Services/prokerService";
 
 function cx(...arr) {
@@ -90,6 +95,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
   const [loading, setLoading] = useState(false);
   const isAuthed = !!state?.session?.isAuthed;
   const canRestoreArchive = isAuthed;
+  const canManageArchive = isAuthed && role === "admin";
   const role = String(state?.session?.role || "").toLowerCase();
   const canViewLoginId = isAuthed && (role === "admin" || role === "ec");
   const activePeriodId = String(
@@ -307,6 +313,26 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     }
   }
 
+  async function handleDeleteArchive(item) {
+    const ok = window.confirm(`Hapus permanen "${item.title}" dari arsip?`);
+    if (!ok) return;
+
+    try {
+      if (item.category === "anggota") {
+        await deleteMemberApi(item.id);
+      } else if (item.category === "kegiatan") {
+        await deleteKegiatanApi(item.id);
+      } else if (item.category === "proker") {
+        await deleteProkerApi(item.id);
+      }
+
+      await loadAllArchiveData();
+      alert("Data berhasil dihapus permanen.");
+    } catch (err) {
+      alert(err.message || "Gagal menghapus data.");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className={ui.card}>
@@ -478,6 +504,29 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                   ) : null}
 
                   <div className="mt-5 flex flex-wrap gap-2 pt-2">
+                    {canManageArchive && (
+                      <>
+                        <button
+                          type="button"
+                          className={cx(ui.btnBase, ui.btnGhost)}
+                          onClick={() => {
+                            if (item.category === "anggota") window.location.href = "/anggota";
+                            if (item.category === "kegiatan") window.location.href = "/kegiatan";
+                            if (item.category === "proker") window.location.href = "/proker";
+                          }}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className={cx(ui.btnBase, "border border-red-300 text-red-600 hover:bg-red-50")}
+                          onClick={() => handleDeleteArchive(item)}
+                        >
+                          Hapus
+                        </button>
+                      </>
+                    )}
                     {item.category === "anggota" ? (
                       canRestoreArchive ? (
                         <button
