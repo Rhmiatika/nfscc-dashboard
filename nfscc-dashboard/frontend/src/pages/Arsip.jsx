@@ -95,8 +95,12 @@ export default function ArsipPage({ state, setState, theme, ui }) {
   const [loading, setLoading] = useState(false);
   const isAuthed = !!state?.session?.isAuthed;
   const canRestoreArchive = isAuthed;
-  const canManageArchive = isAuthed && role === "admin";
+  const isAuthed = !!state?.session?.isAuthed;
+
   const role = String(state?.session?.role || "").toLowerCase();
+
+  const canRestoreArchive = isAuthed;
+  const canManageArchive = isAuthed && role === "admin";
   const canViewLoginId = isAuthed && (role === "admin" || role === "ec");
   const activePeriodId = String(
     state?.activePeriodId ||
