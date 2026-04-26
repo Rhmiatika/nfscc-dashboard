@@ -345,10 +345,10 @@ export default function App() {
             Array.isArray(freshMembers) && freshMembers.length > 0
               ? freshMembers
               : Array.isArray(mergedState?.members)
-              ? mergedState.members.filter(
-                  (m) => String(m.periodId || m.periode || "") === String(activePeriodId)
-                )
-              : [],
+                ? mergedState.members.filter(
+                    (m) => String(m.periodId || m.periode || "") === String(activePeriodId)
+                  )
+                : [],
           session: makeLoggedOutSession({
             periodId: activePeriodId,
             period: activePeriodId,
@@ -391,7 +391,7 @@ export default function App() {
     try {
       const [backendData, freshMembers] = await Promise.all([
         loadBackendState(activePeriodId),
-        listMembersApi(activePeriodId),
+        listMembersApi(activePeriodId).catch(() => []),
       ]);
 
       let nextState = backendData
@@ -407,10 +407,10 @@ export default function App() {
           Array.isArray(freshMembers) && freshMembers.length > 0
             ? freshMembers
             : Array.isArray(nextState?.members)
-            ? nextState.members.filter(
-                (m) => String(m.periodId || m.periode || "") === String(activePeriodId)
-              )
-            : [],
+              ? nextState.members.filter(
+                  (m) => String(m.periodId || m.periode || "") === String(activePeriodId)
+                )
+              : [],
       });
 
       setState(nextState);
