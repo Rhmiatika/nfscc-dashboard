@@ -329,7 +329,7 @@ export default function App() {
       try {
         const [backendData, freshMembers] = await Promise.all([
           loadBackendState(activePeriodId),
-          listMembersApi(activePeriodId).catch(() => []),
+          listMembersApi(activePeriodId),
         ]);
 
         const mergedState = backendData
@@ -391,7 +391,7 @@ export default function App() {
     try {
       const [backendData, freshMembers] = await Promise.all([
         loadBackendState(activePeriodId),
-        listMembersApi(activePeriodId).catch(() => []),
+        listMembersApi(activePeriodId),
       ]);
 
       let nextState = backendData
