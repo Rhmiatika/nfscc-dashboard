@@ -43,7 +43,7 @@ function Modal({ open, title, onClose, children, ui, theme }) {
               className={`${ui.btnBase} ${ui.btnGhost}`}
               onClick={onClose}
             >
-              Tutup
+              ×
             </button>
           </div>
           {children}
@@ -735,7 +735,8 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
         </div>
 
         <div className="mt-4">
-          <div className="mt-4 w-full overflow-x-auto max-h-[320px] overflow-y-auto pr-1">
+          {/* DESKTOP */}
+          <div className="hidden md:block mt-4 w-full overflow-x-auto max-h-[320px] overflow-y-auto pr-1">
             <table className="w-full min-w-[1420px] text-sm">
               <thead className={tableHeadClass}>
                 <tr>
@@ -855,6 +856,78 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               </tbody>
             </table>
           </div>
+
+          {/* MOBILE */}
+          <div className="md:hidden space-y-3 mt-4">
+            {loadingProker ? (
+              <div className="text-sm text-gray-500">Memuat data proker...</div>
+            ) : filteredList.length === 0 ? (
+              <div className="text-sm text-gray-500">Belum ada data proker.</div>
+            ) : (
+              filteredList.map((item) => (
+                <div key={item.id} className={ui.card}>
+                  {/* HEADER */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-semibold">{item.title}</div>
+                      <div className={ui.textMuted}>
+                        {item.divisi} • {item.date}
+                      </div>
+                    </div>
+
+                    <span className={getStatusBadge(item.status, ui)}>
+                      {item.status}
+                    </span>
+                  </div>
+
+                  {/* BODY */}
+                  <div className="mt-2 text-sm space-y-1">
+                    <div>PIC: {getPicName(item.pic)}</div>
+                    <div>
+                      Anggaran:{" "}
+                      {item.budget
+                        ? `Rp ${Number(item.budget).toLocaleString("id-ID")}`
+                        : "-"}
+                    </div>
+
+                    {item.note && (
+                      <div className="text-xs text-gray-500">{item.note}</div>
+                    )}
+                  </div>
+
+                  {/* LINKS */}
+                  <div className="flex flex-wrap gap-3 mt-3 text-sm">
+                    {item.proposalLink && (
+                      <a href={item.proposalLink} target="_blank" className={linkClass}>
+                        Proposal
+                      </a>
+                    )}
+                    {item.docLink && (
+                      <a href={item.docLink} target="_blank" className={linkClass}>
+                        Dokumentasi
+                      </a>
+                    )}
+                    {item.notulensiLink && (
+                      <a href={item.notulensiLink} target="_blank" className={linkClass}>
+                        Evaluasi
+                      </a>
+                    )}
+                  </div>
+
+                  {/* ACTION */}
+                  <div className="mt-3">
+                    <button
+                      className={`${ui.btnBase} ${ui.btnGhost}`}
+                      onClick={() => openView(item)}
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
         </div>
       </div>
 

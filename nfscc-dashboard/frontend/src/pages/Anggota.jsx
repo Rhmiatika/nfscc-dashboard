@@ -25,6 +25,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [query, setQuery] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -39,12 +40,29 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
   const members = Array.isArray(state?.members) ? state.members : [];
 
   const filteredMembers = useMemo(() => {
-    return members.filter(
-      (m) =>
-        String(m.periodId || "") === String(activePeriod) &&
-        !m.archived
-    );
-  }, [members, activePeriod]);
+    const q = query.toLowerCase();
+
+    return members.filter((m) => {
+      if (
+        String(m.periodId || "") !== String(activePeriod) ||
+        m.archived
+      ) return false;
+
+      if (!q) return true;
+
+      const text = [
+        m.name,
+        m.loginId,
+        m.divisi,
+        m.position,
+        m.tahunAngkatan,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return text.includes(q);
+    });
+  }, [members, activePeriod, query]);
 
   async function loadMembers() {
     setLoading(true);
@@ -276,79 +294,92 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           </div>
         </div>
 
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="px-3 py-2 text-left">Nama</th>
-                <th className="px-3 py-2 text-left">Login ID</th>
-                <th className="px-3 py-2 text-left">Divisi</th>
-                <th className="px-3 py-2 text-left">Jabatan</th>
-                <th className="px-3 py-2 text-left">Angkatan</th>
-                <th className="px-3 py-2 text-left">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMembers.map((member) => (
-                <tr key={member.id} className="border-b">
-                  <td className="px-3 py-2">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={
-                          member.photo ||
-                          `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`
-                        }
-                        alt={member.name || "User"}
-                        className="h-8 w-8 rounded-full object-cover border border-gray-200"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`;
-                        }}
-                      />
-                      <span>{member.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2">{member.loginId}</td>
-                  <td className="px-3 py-2">{member.divisi}</td>
-                  <td className="px-3 py-2">{member.position}</td>
-                  <td className="px-3 py-2">{member.tahunAngkatan || "-"}</td>
-                  <td className="px-3 py-2">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(member)}
-                        className="rounded-xl border border-gray-300 px-3 py-1"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onResetPassword(member)}
-                        className="rounded-xl border border-amber-300 px-3 py-1 text-amber-700"
-                      >
-                        Reset Password
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(member)}
-                        className="rounded-xl border border-red-300 px-3 py-1 text-red-700"
-                      >
-                        Hapus
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+        <div className="mt-4">
 
-              {!loading && filteredMembers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-3 py-6 text-center text-gray-500">
-                    Belum ada anggota pada periode ini.
-                  </td>
+          {/* DESKTOP TABLE */}
+          <div className="hidden md:block overflow-x-auto">
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              Cari anggota
+            </div>
+
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Cari anggota..."
+              className={cx(ui.input, "w-full md:w-[300px]")}
+            />
+          </div>
+            <table className="min-w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="px-3 py-2 text-left">Nama</th>
+                  <th className="px-3 py-2 text-left">Login ID</th>
+                  <th className="px-3 py-2 text-left">Divisi</th>
+                  <th className="px-3 py-2 text-left">Jabatan</th>
+                  <th className="px-3 py-2 text-left">Angkatan</th>
+                  <th className="px-3 py-2 text-left">Aksi</th>
                 </tr>
-              ) : null}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredMembers.map((member) => (
+                  <tr key={member.id} className="border-b">
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`}
+                          className="h-8 w-8 rounded-full border"
+                        />
+                        {member.name}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2">{member.loginId}</td>
+                    <td className="px-3 py-2">{member.divisi}</td>
+                    <td className="px-3 py-2">{member.position}</td>
+                    <td className="px-3 py-2">{member.tahunAngkatan || "-"}</td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-2">
+                        <button onClick={() => onEdit(member)} className="rounded-xl border border-gray-300 px-3 py-1">Edit</button>
+                        <button onClick={() => onResetPassword(member)} className="rounded-xl border border-amber-300 px-3 py-1 text-amber-700">Reset</button>
+                        <button onClick={() => onDelete(member)} className="rounded-xl border border-red-300 px-3 py-1 text-red-700">Hapus</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* MOBILE CARD */}
+          <div className="md:hidden space-y-3">
+            {filteredMembers.map((member) => (
+              <div key={member.id} className="border rounded-2xl p-4 space-y-2">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`}
+                    className="h-10 w-10 rounded-full border"
+                  />
+                  <div>
+                    <div className="font-semibold">{member.name}</div>
+                    <div className="text-xs text-gray-500">{member.loginId}</div>
+                  </div>
+                </div>
+
+                <div className="text-sm">
+                  <div><b>Divisi:</b> {member.divisi}</div>
+                  <div><b>Jabatan:</b> {member.position}</div>
+                  <div><b>Angkatan:</b> {member.tahunAngkatan || "-"}</div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <button onClick={() => onEdit(member)} className="px-3 py-1 border rounded-xl">Edit</button>
+                  <button onClick={() => onResetPassword(member)} className="px-3 py-1 border rounded-xl text-amber-600">Reset</button>
+                  <button onClick={() => onDelete(member)} className="px-3 py-1 border rounded-xl text-red-600">Hapus</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </section>
     </div>

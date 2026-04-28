@@ -335,7 +335,7 @@ export default function LoginPage({
                     theme === "dark" ? "text-slate-400" : "text-gray-600"
                   )}
                 >
-                  Login tanpa pilih periode. Sistem akan membaca periode akun secara otomatis.
+                  {/* Login tanpa pilih periode. Sistem akan membaca periode akun secara otomatis. */}
                 </div>
               </div>
             </div>
@@ -350,7 +350,7 @@ export default function LoginPage({
                 : "border-gray-200 bg-gray-50 text-gray-600"
             )}
           >
-            Periode aktif dashboard saat ini: <b>{currentActivePeriod.label}</b>
+            Periode aktif: <b>{currentActivePeriod.label}</b>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2">

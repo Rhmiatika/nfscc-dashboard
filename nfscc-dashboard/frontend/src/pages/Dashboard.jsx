@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 function cx(...arr) {
@@ -124,6 +124,18 @@ export default function DashboardPage({ state, setState, theme, ui }) {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+
+  const agendaRefs = useRef({});
+
+  function scrollToAgenda(eventId) {
+    const target = agendaRefs.current[eventId];
+    if (!target) return;
+
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }
 
   const members = Array.isArray(state?.members) ? state.members : [];
   const periods = Array.isArray(state?.periods) ? state.periods : [];
@@ -500,7 +512,7 @@ const activePeriodLabel =
           <img
             src={dashboardBanner}
             alt="Banner kegiatan NFSCC"
-            className="h-[500px] w-full object-cover"
+            className="h-auto w-full object-contain md:max-h-[500px] md:object-cover"
             onError={(e) => {
               e.currentTarget.style.display = "none";
               const next = e.currentTarget.nextSibling;
@@ -568,7 +580,7 @@ const activePeriodLabel =
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {calendarDays.map((cell, idx) => {
                 if (!cell) {
                   return (
@@ -622,10 +634,21 @@ const activePeriodLabel =
                     : "";
 
                 return (
-                  <div
-                    key={cell.day}
-                    className={cx("min-h-[72px] rounded-xl border p-2", calendarCellTone)}
-                  >
+                    <button
+                      type="button"
+                      key={cell.day}
+                      onClick={() => {
+                        if (cell.events.length > 0) {
+                          scrollToAgenda(cell.events[0].id);
+                        }
+                      }}
+                      disabled={cell.events.length === 0}
+                      className={cx(
+                        "min-h-[58px] w-full rounded-lg border p-1 text-left transition sm:min-h-[72px] sm:rounded-xl sm:p-2",
+                        cell.events.length > 0 ? "cursor-pointer hover:scale-[1.01] active:scale-[0.99]" : "cursor-default",
+                        calendarCellTone
+                      )}
+                    >
                     <div className="flex items-center justify-between gap-2">
                       <div
                         className={cx(
@@ -642,11 +665,12 @@ const activePeriodLabel =
                       {hasEvent ? (
                         <span
                           className={cx(
-                            "rounded-full px-2 py-1 text-[10px] font-semibold",
+                            "rounded-full px-1.5 py-0.5 text-[9px] font-semibold sm:px-2 sm:py-1 sm:text-[10px]",
                             badgeTone
                           )}
                         >
-                          {cell.events.length} jadwal
+                          <span className="sm:hidden">{cell.events.length}</span>
+                          <span className="hidden sm:inline">{cell.events.length} jadwal</span>
                         </span>
                       ) : null}
                     </div>
@@ -656,7 +680,7 @@ const activePeriodLabel =
                         <div
                           key={event.id}
                           className={cx(
-                            "truncate rounded-xl px-2 py-1 text-xs",
+                            "hidden truncate rounded-xl px-2 py-1 text-xs sm:block",
                             theme === "dark"
                               ? "bg-white/10 text-slate-100"
                               : "bg-white text-gray-700 ring-1 ring-gray-200"
@@ -672,7 +696,7 @@ const activePeriodLabel =
                         </div>
                       ) : null}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -714,6 +738,9 @@ const activePeriodLabel =
                 monthAgenda.map((event) => (
                   <div
                     key={event.id}
+                    ref={(el) => {
+                      agendaRefs.current[event.id] = el;
+                    }}
                     className={cx(
                       "rounded-2xl border p-3",
                       theme === "dark"
@@ -784,8 +811,47 @@ const activePeriodLabel =
           </NavLink>
         }
       >
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-sm">
+        <div className="space-y-3 md:hidden">
+          {lastProker.length === 0 ? (
+            <div className={cx("rounded-2xl border border-dashed p-4 text-sm", ui.textMuted2)}>
+              Belum ada proker.
+            </div>
+          ) : (
+            lastProker.map((p) => (
+              <div
+                key={p.id}
+                className={cx(
+                  "rounded-2xl border p-4",
+                  theme === "dark"
+                    ? "border-white/10 bg-white/[0.03]"
+                    : "border-gray-200 bg-white"
+                )}
+              >
+                <div className="font-semibold">
+                  {p.title || p.nama || "-"}
+                </div>
+
+                <div className={cx("mt-1 text-sm", ui.textMuted)}>
+                  {p.divisi || "-"} • {p.tanggal || p.date || "-"}
+                </div>
+
+                <div className={cx("mt-3 grid grid-cols-1 gap-1 text-sm", ui.textMuted2)}>
+                  <div>PIC: {getMemberName(p.pic)}</div>
+                  <div>Status: {p.status || "-"}</div>
+                  <div>
+                    Anggaran: Rp{" "}
+                    {new Intl.NumberFormat("id-ID").format(
+                      Number(p.anggaran || p.budget || 0)
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="hidden md:block">
+          <table className="w-full text-sm">
             <thead className={tableHeadClass}>
               <tr>
                 <th className={thClass}>Nama</th>
@@ -796,6 +862,7 @@ const activePeriodLabel =
                 <th className={thClass}>Anggaran</th>
               </tr>
             </thead>
+
             <tbody>
               {lastProker.map((p) => (
                 <tr key={p.id} className={tableRowClass}>
@@ -814,6 +881,7 @@ const activePeriodLabel =
                   </td>
                 </tr>
               ))}
+
               {lastProker.length === 0 ? (
                 <tr className={tableRowClass}>
                   <td className={cx(tdClass, ui.textMuted2)} colSpan={6}>

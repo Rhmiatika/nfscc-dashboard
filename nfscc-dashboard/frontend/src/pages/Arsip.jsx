@@ -92,6 +92,8 @@ export default function ArsipPage({ state, setState, theme, ui }) {
   const [archivedMembers, setArchivedMembers] = useState([]);
   const [allKegiatan, setAllKegiatan] = useState([]);
   const [allProker, setAllProker] = useState([]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const isAuthed = !!state?.session?.isAuthed;
 
@@ -315,6 +317,24 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     }
   }
 
+  async function handleSaveEdit(form) {
+    try {
+      console.log("UPDATE DATA:", editingItem.id, form);
+
+      // ⚠️ nanti sambungkan ke API update masing-masing:
+      // updateKegiatanApi(...)
+      // updateProkerApi(...)
+      // updateMemberApi(...)
+
+      setEditOpen(false);
+      setEditingItem(null);
+
+      await loadAllArchiveData();
+    } catch (err) {
+      alert("Gagal update data");
+    }
+  }
+
   async function handleDeleteArchive(item) {
     const ok = window.confirm(`Hapus permanen "${item.title}" dari arsip?`);
     if (!ok) return;
@@ -335,7 +355,104 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     }
   }
 
+  function EditModal({ open, item, onClose, onSave, ui, theme }) {
+    const [form, setForm] = useState({});
+
+    useEffect(() => {
+      if (item) {
+        setForm({
+          title: item.title || "",
+          tanggal: item.tanggal || "",
+          lokasi: item.lokasi || "",
+          divisi: item.divisi || "",
+          status: item.status || "",
+          pic: item.pic || "",
+          loginId: item.loginId || "",
+          position: item.position || "",
+          tahunAngkatan: item.tahunAngkatan || "",
+          archiveReason: item.archiveReason || "",
+        });
+      }
+    }, [item]);
+
+    if (!open || !item) return null;
+
+    function handleChange(key, value) {
+      setForm((prev) => ({ ...prev, [key]: value }));
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      onSave(form);
+    }
+
+    return (
+      <div className="fixed inset-0 z-[80]">
+        <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+
+        <div className="absolute inset-0 flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSubmit}
+            className={cx(
+              "w-full max-w-lg rounded-2xl border p-5 space-y-3",
+              theme === "dark"
+                ? "bg-slate-900 border-white/10"
+                : "bg-white border-gray-200"
+            )}
+          >
+            <div className="text-lg font-semibold">Edit Data</div>
+
+            {/* FIELD DINAMIS */}
+            <input
+              className={ui.input}
+              value={form.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+              placeholder="Judul"
+            />
+
+            {item.category === "kegiatan" && (
+              <>
+                <input className={ui.input} value={form.tanggal} onChange={(e)=>handleChange("tanggal", e.target.value)} placeholder="Tanggal"/>
+                <input className={ui.input} value={form.lokasi} onChange={(e)=>handleChange("lokasi", e.target.value)} placeholder="Lokasi"/>
+                <input className={ui.input} value={form.pic} onChange={(e)=>handleChange("pic", e.target.value)} placeholder="PIC"/>
+              </>
+            )}
+
+            {item.category === "proker" && (
+              <>
+                <input className={ui.input} value={form.tanggal} onChange={(e)=>handleChange("tanggal", e.target.value)} placeholder="Tanggal"/>
+                <input className={ui.input} value={form.divisi} onChange={(e)=>handleChange("divisi", e.target.value)} placeholder="Divisi"/>
+                <input className={ui.input} value={form.status} onChange={(e)=>handleChange("status", e.target.value)} placeholder="Status"/>
+                <input className={ui.input} value={form.pic} onChange={(e)=>handleChange("pic", e.target.value)} placeholder="PIC"/>
+              </>
+            )}
+
+            {item.category === "anggota" && (
+              <>
+                <input className={ui.input} value={form.loginId} onChange={(e)=>handleChange("loginId", e.target.value)} placeholder="Login ID"/>
+                <input className={ui.input} value={form.divisi} onChange={(e)=>handleChange("divisi", e.target.value)} placeholder="Divisi"/>
+                <input className={ui.input} value={form.position} onChange={(e)=>handleChange("position", e.target.value)} placeholder="Posisi"/>
+                <input className={ui.input} value={form.tahunAngkatan} onChange={(e)=>handleChange("tahunAngkatan", e.target.value)} placeholder="Tahun Angkatan"/>
+                <input className={ui.input} value={form.archiveReason} onChange={(e)=>handleChange("archiveReason", e.target.value)} placeholder="Alasan Arsip"/>
+              </>
+            )}
+
+            <div className="flex gap-2 pt-2">
+              <button type="submit" className={cx(ui.btnBase, ui.btnPrimary)}>
+                Simpan
+              </button>
+              <button type="button" onClick={onClose} className={cx(ui.btnBase, ui.btnGhost)}>
+                Batal
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
+    <>
     <div className="space-y-6">
       <div className={ui.card}>
         <div>
@@ -446,20 +563,20 @@ export default function ArsipPage({ state, setState, theme, ui }) {
               Belum ada arsip pada folder ini.
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-6">
               {visibleItems.map((item) => (
                 <div
                   key={`${item.category}-${item.id}-${item.periodId}`}
                   className={cx(
-                    "flex h-full flex-col rounded-2xl border p-5",
+                    "flex h-full flex-col rounded-xl border p-3",
                     theme === "dark"
                       ? "border-white/10 bg-white/[0.03]"
                       : "border-gray-200 bg-white"
                   )}
                 >
-                  <div className="text-lg font-semibold">{item.title}</div>
+                  <div className="text-sm font-semibold leading-snug">{item.title}</div>
 
-                  <div className={cx("mt-3 space-y-1 text-sm", ui.textMuted, "flex-1")}>
+                  <div className={cx("mt-2 space-y-0.5 text-xs", ui.textMuted, "flex-1")}>
                     {item.category === "anggota" ? (
                       <>
                         {canViewLoginId && (
@@ -493,7 +610,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                   </div>
 
                   {item.links?.length ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-2 flex flex-wrap gap-1.5">
                       {item.links.map((link) => (
                         <LinkChip
                           key={`${item.id}-${link.label}-${link.url}`}
@@ -505,16 +622,15 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                     </div>
                   ) : null}
 
-                  <div className="mt-5 flex flex-wrap gap-2 pt-2">
+                  <div className="mt-3 flex flex-wrap gap-1.5 pt-1">
                     {canManageArchive && (
                       <>
                         <button
                           type="button"
                           className={cx(ui.btnBase, ui.btnGhost)}
                           onClick={() => {
-                            if (item.category === "anggota") window.location.href = "/anggota";
-                            if (item.category === "kegiatan") window.location.href = "/kegiatan";
-                            if (item.category === "proker") window.location.href = "/proker";
+                            setEditingItem(item);
+                            setEditOpen(true);
                           }}
                         >
                           Edit
@@ -586,5 +702,18 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         </div>
       ) : null}
     </div>
+
+    <EditModal
+      open={editOpen}
+      item={editingItem}
+      onClose={() => {
+        setEditOpen(false);
+        setEditingItem(null);
+      }}
+      onSave={handleSaveEdit}
+      ui={ui}
+      theme={theme}
+    />
+  </>
   );
 }

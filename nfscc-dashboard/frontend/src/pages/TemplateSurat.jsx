@@ -146,7 +146,7 @@ function PreviewThumbnail({ item, theme }) {
   return (
     <div
       className={cx(
-        "relative h-64 w-full overflow-hidden border-b",
+        "relative h-40 w-full overflow-hidden border-b",
         theme === "dark"
           ? "border-white/10 bg-slate-900"
           : "border-gray-200 bg-gray-50"
@@ -189,19 +189,19 @@ function PreviewThumbnail({ item, theme }) {
               {preview.heading}
             </div>
 
-            <div className="mt-3 space-y-2">
-              {preview.lines.map((line, idx) => (
+            <div className="mt-1.5 space-y-1">
+              {preview.lines.slice(0, 2).map((line, idx) => (
                 <div key={idx} className="space-y-1">
                   <div
                     className={cx(
-                      "h-2.5 rounded-full",
+                      "h-1 rounded-full",
                       idx === 0 ? "w-[78%]" : idx === 1 ? "w-[86%]" : idx === 2 ? "w-[70%]" : "w-[82%]",
                       theme === "dark" ? "bg-white/10" : "bg-gray-200"
                     )}
                   />
                   <div
                     className={cx(
-                      "h-2 rounded-full",
+                      "h-1 rounded-full",
                       idx === 0 ? "w-[55%]" : idx === 1 ? "w-[60%]" : idx === 2 ? "w-[48%]" : "w-[57%]",
                       theme === "dark" ? "bg-white/5" : "bg-gray-100"
                     )}
@@ -228,14 +228,6 @@ function PreviewThumbnail({ item, theme }) {
               </div>
             )}
 
-            <div
-              className={cx(
-                "absolute bottom-6 left-10 right-10 truncate text-[11px] font-medium",
-                theme === "dark" ? "text-slate-300" : "text-gray-700"
-              )}
-            >
-              {preview.footer}
-            </div>
           </div>
         </div>
       </div>
@@ -609,7 +601,7 @@ export default function TemplateSuratPage({
           {docError}
         </div>
       ) : null}
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {loadingDocs ? (
         <div className={cx(ui.card, "sm:col-span-2 xl:col-span-4")}>
           <div className="text-base font-semibold">Memuat dokumen...</div>
@@ -645,14 +637,14 @@ export default function TemplateSuratPage({
                 <PreviewThumbnail item={item} theme={theme} />
               </a>
 
-              <div className="p-4">
+              <div className="p-2">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <a
                       href={item.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="block truncate text-[15px] font-semibold leading-6 hover:underline"
+                      className="block truncate text-[14px] font-semibold leading-5 hover:underline"
                       title={item.title}
                     >
                       {item.title}
@@ -672,7 +664,7 @@ export default function TemplateSuratPage({
                   </div>
                 </div>
 
-                <div className={cx("mt-3 text-sm", ui.textMuted2)}>
+                <div className={cx("mt-1 text-xs", ui.textMuted2)}>
                   Ditambahkan {formatCreatedAt(item.createdAt)}
                   {item.periodId ? ` • Periode ${item.periodId}` : ""}
                 </div>

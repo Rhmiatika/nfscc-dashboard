@@ -627,7 +627,8 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
           </div>
         </div>
 
-        <div className="mt-4 w-full overflow-x-auto max-h-[320px] overflow-y-auto pr-1">
+         {/* DESKTOP */}
+        <div className="hidden md:block mt-4 w-full overflow-x-auto max-h-[320px] overflow-y-auto pr-1">
           <table className="w-full min-w-[1280px] text-sm">
             <thead className={tableHeadClass}>
               <tr>
@@ -710,6 +711,64 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
             </tbody>
           </table>
         </div>
+
+        {/* MOBILE CARD */}
+        <div className="md:hidden mt-4 space-y-3">
+          {loadingKegiatan ? (
+            <div className={cx("text-center py-6", ui.textMuted)}>
+              Memuat data kegiatan...
+            </div>
+          ) : filteredKegiatanList.length === 0 ? (
+            <div className={cx("text-center py-6", ui.textMuted)}>
+              Belum ada kegiatan.
+            </div>
+          ) : (
+            filteredKegiatanList.map((k) => (
+              <div
+                key={k.id}
+                className={cx(
+                  "rounded-2xl p-4 shadow-sm border",
+                  theme === "dark"
+                    ? "bg-white/5 border-white/10"
+                    : "bg-white border-gray-200"
+                )}
+              >
+                <div className="font-semibold text-base">
+                  {k.title}
+                </div>
+
+                <div className="mt-2 text-sm space-y-1">
+                  <div><span className={ui.textMuted}>Tanggal:</span> {k.tanggal || "-"}</div>
+                  <div><span className={ui.textMuted}>Lokasi:</span> {k.lokasi || "-"}</div>
+                  <div><span className={ui.textMuted}>PIC:</span> {k.pic || creatorLabel(k.createdBy)}</div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                  {k.dokLink && (
+                    <a href={k.dokLink} target="_blank" rel="noreferrer" className={linkClass}>
+                      Dokumentasi
+                    </a>
+                  )}
+                  {k.notulensiLink && (
+                    <a href={k.notulensiLink} target="_blank" rel="noreferrer" className={linkClass}>
+                      Notulensi
+                    </a>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <button
+                    className={cx(ui.btnBase, ui.btnGhost, "w-full")}
+                    onClick={() => openView(k)}
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        
       </div>
 
       {viewOpen && active ? (

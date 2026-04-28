@@ -124,6 +124,7 @@ export default function NavbarLayout({ state, setState, theme, ui, onToggleTheme
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const profileRef = useRef(null);
 
   const sessionLoginId = state?.session?.loginId || "";
@@ -328,7 +329,7 @@ export default function NavbarLayout({ state, setState, theme, ui, onToggleTheme
   return (
     <div className={ui?.page || ""}>
       <div className="flex min-h-screen flex-col">
-        <div className="w-full px-4 py-5 sm:px-6 lg:px-10">
+        <div className="w-full max-w-7xl mx-auto px-3 py-4 sm:px-6 lg:px-10">
           <div className={headerCls}>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:gap-3">
@@ -460,24 +461,66 @@ export default function NavbarLayout({ state, setState, theme, ui, onToggleTheme
               </div>
             </div>
 
-            <div className={navWrapCls}>
-              <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
-                {links.map((l) => (
-                  <NavLink
-                    key={l.to}
-                    to={l.to}
-                    className={({ isActive }) => cx(navBase, isActive ? navActive : navIdle)}
-                  >
-                    {l.label}
-                  </NavLink>
-                ))}
-              </div>
+<div className={navWrapCls}>
+  <div className="flex items-center justify-between md:hidden">
+    <div className={cx("text-sm font-semibold", ui.textMuted)}>
+      Menu
+    </div>
+
+    <button
+      type="button"
+      onClick={() => setMobileMenuOpen((v) => !v)}
+      className={cx(
+        "rounded-xl px-4 py-2 text-lg font-bold transition",
+        theme === "dark"
+          ? "bg-white/10 text-white hover:bg-white/15"
+          : "bg-white text-gray-900 ring-1 ring-gray-200 hover:bg-gray-100"
+      )}
+      aria-label="Buka menu"
+    >
+      {mobileMenuOpen ? "×" : "☰"}
+    </button>
+  </div>
+
+  <div className="hidden items-center gap-2 md:flex">
+    {links.map((l) => (
+      <NavLink
+        key={l.to}
+        to={l.to}
+        className={({ isActive }) =>
+          cx(navBase, isActive ? navActive : navIdle)
+        }
+      >
+        {l.label}
+      </NavLink>
+    ))}
+  </div>
+
+              {mobileMenuOpen ? (
+                <div className="mt-3 grid grid-cols-1 gap-2 md:hidden">
+                  {links.map((l) => (
+                    <NavLink
+                      key={l.to}
+                      to={l.to}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        cx(
+                          "rounded-xl px-4 py-3 text-sm font-semibold transition",
+                          isActive ? navActive : navIdle
+                        )
+                      }
+                    >
+                      {l.label}
+                    </NavLink>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto px-4 pb-10 sm:px-6 lg:px-10">
-          <div className="w-full">{children ?? <Outlet />}</div>
+        <main className="flex-1 overflow-y-auto px-3 pb-10 sm:px-6 lg:px-10">
+          <div className="w-full max-w-7xl mx-auto">{children ?? <Outlet />}</div>
         </main>
       </div>
 

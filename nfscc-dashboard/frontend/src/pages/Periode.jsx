@@ -38,6 +38,23 @@ export default function PeriodePage({ state, setState, theme, ui }) {
     }
   }, [state?.session?.period, state?.activePeriod, state?.periods]);
 
+  const normalizedPeriods = useMemo(() => {
+    const list = periods || [];
+
+    // cari yang aktif
+    const active = list.find((p) => p.isActive);
+
+    // kalau ga ada yang aktif, ambil enabled pertama
+    const fallback = list.find((p) => p.isEnabled);
+
+    const activeId = active?.id || fallback?.id;
+
+    return list.map((p) => ({
+      ...p,
+      isEnabled: String(p.id) === String(activeId),
+    }));
+  }, [periods]);
+
   const btnPrimary =
     theme === "dark"
       ? "bg-white text-slate-900 hover:bg-white/90"
@@ -238,7 +255,7 @@ export default function PeriodePage({ state, setState, theme, ui }) {
           <div>
             <h1 className="text-2xl font-semibold">Kelola Periode</h1>
             <p className={cx("mt-2 text-sm", ui.textMuted)}>
-              Tambah/hapus periode hanya bisa dilakukan oleh Admin.
+              {/* Tambah/hapus periode hanya bisa dilakukan oleh Admin. */}
             </p>
             <p className={cx("mt-1 text-sm", ui.textMuted)}>
               Periode yang <b>aktif</b> akan menjadi acuan domain login.
@@ -279,7 +296,7 @@ export default function PeriodePage({ state, setState, theme, ui }) {
               placeholder="contoh: nfcc (tanpa @)"
             />
             <div className={cx("mt-2 text-xs", ui.textMuted2)}>
-              Kosongkan untuk otomatis: 2025 → nfscc, 2026+ → nfcc
+              Kosongkan untuk mengisi otomatis mengikuti periiode yang aktif
             </div>
           </div>
 
@@ -305,8 +322,12 @@ export default function PeriodePage({ state, setState, theme, ui }) {
         <div className="mt-10">
           <div className="mb-3 text-lg font-semibold">Daftar Periode</div>
 
-          <div className={ui.tableWrap}>
-            <table className={ui.table}>
+        <div className="mt-4">
+
+            {/* DESKTOP */}
+          <div className="hidden md:block">
+            <div className={ui.tableWrap}>
+              <table className={ui.table}>
               <thead>
                 <tr>
                   <th className={ui.th}>ID</th>
@@ -344,11 +365,11 @@ export default function PeriodePage({ state, setState, theme, ui }) {
                             type="button"
                             className={cx(
                               "rounded-xl px-3 py-1.5 text-xs font-semibold",
-                              p.isEnabled ? btnGhost : btnPrimary
+                              p.isActive ? btnGhost : btnPrimary
                             )}
                             onClick={() => onTogglePeriod(p)}
                           >
-                            {p.isEnabled ? "Nonaktifkan" : "Aktifkan"}
+                            {p.isActive ? "Sedang Aktif" : "Aktifkan"}
                           </button>
 
                           {locked ? (
@@ -383,22 +404,83 @@ export default function PeriodePage({ state, setState, theme, ui }) {
               </tbody>
             </table>
           </div>
+          </div>
+
+        {/* MOBILE */}
+          <div className="md:hidden space-y-3">
+            {periods.map((p) => {
+              const pid = String(p.id);
+              const locked = pid === "2025" || pid === "2026";
+
+              return (
+                <div key={pid} className="border rounded-2xl p-4 space-y-3">
+                  
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-semibold text-lg">{pid}</div>
+                      <div className="text-sm text-gray-500">{p.label}</div>
+                    </div>
+
+                    <div className="text-sm">@{p.domain}</div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className={p.isEnabled ? ui.badgeGreen : ui.badge}>
+                      {p.isEnabled ? "Enabled" : "Nonaktif"}
+                    </span>
+
+                    {p.isActive && (
+                      <span className={ui.badge}>
+                        Aktif Dashboard
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    <button
+                      type="button"
+                      className={cx(
+                        "rounded-xl px-3 py-1.5 text-xs font-semibold",
+                        p.isActive ? btnGhost : btnPrimary
+                      )}
+                      onClick={() => onTogglePeriod(p)}
+                    >
+                      {p.isActive ? "Sedang Aktif" : "Aktifkan"}
+                    </button>
+
+                    {locked ? (
+                      <span className="text-xs text-gray-400 self-center">
+                        Tidak bisa dihapus
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className={cx(
+                          "rounded-xl px-3 py-1.5 text-xs font-semibold",
+                          btnDanger
+                        )}
+                        onClick={() => onDeletePeriod(pid)}
+                      >
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
 
           <div className={cx("mt-4 text-xs", ui.textMuted2)}>
-            Catatan:
+            Note:
             <br />
-            - Domain bisa manual.
-            <br />
-            - Jika kosong saat buat, domain otomatis: 2025 → nfscc, 2026+ → nfcc.
-            <br />
-            - Periode 2025 dan 2026 dikunci agar tidak ikut terhapus.
-            <br />
-            - Saat satu periode diaktifkan, domain login mengikuti domain periode aktif tersebut.
+              Kosongkan untuk membuat domain otomatis mengikuti periode yang aktif.
             <br />
             - Minimal harus ada satu periode aktif.
           </div>
         </div>
+        </div>
+        </div>
       </div>
-    </div>
   );
 }

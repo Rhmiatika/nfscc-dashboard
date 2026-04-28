@@ -925,7 +925,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
 
   const [historyFilter, setHistoryFilter] = useState("all");
   const [downloadFilter, setDownloadFilter] = useState("all");
-  const [divisiFilter, setDivisiFilter] = useState("all");
+  const [divisiFilter, setDivisiFilter] = useState("");
 
   const combinedHistory = useMemo(() => {
   const kasRows = kasPayments.map((p) => ({
@@ -1462,31 +1462,34 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
 
   const divisiOptions = useMemo(() => {
     const mapped = financeMembers.map((m) => {
-      const div = String(m?.divisi || m?.division || "").trim().toLowerCase();
+      const raw = m?.divisi || m?.division || "";
+      const div = String(raw).trim().toLowerCase().replace(/\s/g, "");
 
-      if (div === "lead" || div === "vice lead") {
+      if (div === "lead" || div === "vicelead") {
         return "LEAD";
       }
 
-      return m?.divisi || m?.division || "";
+      return raw.trim();
     });
 
-    const unique = [...new Set(mapped.filter(Boolean))];
+    const unique = [...new Set(mapped.filter((v) => v && v.trim()))];
 
     return unique.sort((a, b) => a.localeCompare(b, "id"));
   }, [financeMembers]);
 
+  const normalize = (v) => v?.toLowerCase().replace(/\s/g, "");
+
   const filteredKasRecap = useMemo(() => {
-    if (divisiFilter === "all") return allMembersKasRecap;
+    if (!divisiFilter) return []; // ⬅️ default kosong
 
     return allMembersKasRecap.filter((member) => {
-      const div = String(member?.divisi || "").trim().toLowerCase();
+      const div = normalize(member?.divisi);
 
       if (divisiFilter === "LEAD") {
-        return div === "lead" || div === "vice lead";
+        return ["lead", "vicelead"].includes(div);
       }
 
-      return String(member?.divisi || "").trim() === divisiFilter;
+      return div === normalize(divisiFilter);
     });
   }, [allMembersKasRecap, divisiFilter]);
 
@@ -2126,7 +2129,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
                 value={divisiFilter}
                 onChange={(e) => setDivisiFilter(e.target.value)}
               >
-                <option value="all">Semua</option>
+                <option value="">Pilih Divisi</option>
                 {divisiOptions.map((divisi) => (
                   <option key={divisi} value={divisi}>
                     {divisi}
@@ -2135,8 +2138,9 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
               </select>
             </div>
           </div>
-
-          <div className="overflow-x-auto">
+              
+            {/* DEKSTOP */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full min-w-[1400px] text-sm">
               <thead className={tableHeadClass}>
                 <tr>
@@ -2205,6 +2209,37 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
               </tbody>
             </table>
           </div>
+
+          {/* MOBILE */}
+          <div className="md:hidden space-y-3">
+            {filteredKasRecap.map((member) => (
+              <div key={member.loginId || member.name} className={ui.card}>
+                <div className="font-medium">{member.name}</div>
+                <div className={ui.textMuted}>{member.divisi}</div>
+
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {member.monthStatuses.map((month) => (
+                    <div
+                      key={month.key}
+                      className={cx(
+                        "text-xs text-center rounded-lg py-2",
+                        month.isPaid
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-gray-200 text-gray-600"
+                      )}
+                    >
+                      {month.label.slice(0, 3)}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-2 text-sm font-semibold">
+                  {member.paidCount}/12 bulan
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       ) : null}
 
@@ -2257,7 +2292,8 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
           </div>
         </div>
 
-        <div className="mt-4 overflow-x-auto">
+          {/* DEKSTOP */}
+        <div className="mt-4 hidden md:block overflow-x-auto">
           {canViewFinanceDetail ? (
             <table className="w-full min-w-[1280px] text-sm">
               <thead className={tableHeadClass}>
@@ -2405,6 +2441,42 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
             </table>
           )}
         </div>
+
+        {/* MOBILE */}
+        <div className="mt-4 md:hidden space-y-3">
+          {filteredHistory.map((row) => (
+            <div key={`${row.kind}-${row.id}`} className={ui.card}>
+              <div className="flex justify-between items-center">
+                <div className="font-medium">{row.label}</div>
+                <div className="text-sm">
+                  {formatRupiah(row.nominal || 0)}
+                </div>
+              </div>
+
+              <div className={cx("text-sm mt-1", ui.textMuted)}>
+                {row.tanggal} • {row.divisi}
+              </div>
+
+              <div className="mt-2 text-xs space-y-1">
+                <div>Tipe: {row.tipe || "-"}</div>
+                <div>Kategori: {row.kategori || "-"}</div>
+                {row.catatan && <div>Catatan: {row.catatan}</div>}
+              </div>
+
+              {row.proof?.url && (
+                <a
+                  href={row.proof.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm underline mt-2 inline-block"
+                >
+                  Lihat bukti
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+
       </div>
 
     {canManageFinance ? (

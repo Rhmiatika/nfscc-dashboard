@@ -309,6 +309,15 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
     );
   }, [members]);
 
+  const [searchMember, setSearchMember] = useState("");
+  const [searchRiwayat, setSearchRiwayat] = useState("");
+
+  const filteredMembers = useMemo(() => {
+    return membersSorted.filter(m =>
+      m.name.toLowerCase().includes(searchMember.toLowerCase())
+    );
+  }, [membersSorted, searchMember]);
+
     const findExistingPresensiByAcaraValue = (value) => {
     if (!value) return null;
 
@@ -333,7 +342,6 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
   const [hadirIds, setHadirIds] = useState([]);
   const [izinIds, setIzinIds] = useState([]);
   const [izinReasons, setIzinReasons] = useState({});
-  const [searchRiwayat, setSearchRiwayat] = useState("");
 
   const [acaraMenuOpen, setAcaraMenuOpen] = useState(false);
   const [editAcaraMenuOpen, setEditAcaraMenuOpen] = useState(false);
@@ -833,7 +841,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
             Akses tambah/edit presensi hanya untuk divisi <b>Secretary</b> dan <b>PR</b>.
           </div>
         ) : (
-          <form onSubmit={addPresensi} className="space-y-4">
+          <form onSubmit={addPresensi} className="space-y-6">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
               <div className="md:col-span-2">
                 <label className={cx("text-sm", ui.textMuted)}>Nama Acara</label>
@@ -845,7 +853,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                       type="button"
                       className={cx(
                         ui.input,
-                        "flex w-full items-center justify-between text-left"
+                        "flex w-full items-center justify-between text-left min-h-[44px]"
                       )}
                       onClick={() => setAcaraMenuOpen((v) => !v)}
                       disabled={acaraOptions.length === 0}
@@ -860,6 +868,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                       <div
                         className={cx(
                           "rounded-2xl border p-1",
+                          "absolute z-50 w-full rounded-2xl border p-1",
                           theme === "dark"
                             ? "border-white/10 bg-slate-950"
                             : "border-gray-200 bg-white"
@@ -955,14 +964,14 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className={softBoxClass}>
                 <div className="text-sm font-semibold">Hadir</div>
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {membersSorted.map((m) => (
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 max-h-[220px] overflow-y-auto pr-1">
+                  {filteredMembers.map((m) => (
                     <label
                       key={m.loginId}
                       className={cx("flex items-center gap-2 text-sm", ui.textMuted)}
                     >
                       <input
-                        type="checkbox"
+                        type="checkbox" className="h-5 w-5"
                         checked={hadirIds.includes(m.loginId)}
                         disabled={izinIds.includes(m.loginId)}
                         onChange={(e) => toggleHadir(m.loginId, e.target.checked)}
@@ -978,14 +987,14 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
 
               <div className={softBoxClass}>
                 <div className="text-sm font-semibold">Izin</div>
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {membersSorted.map((m) => (
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 max-h-[220px] overflow-y-auto pr-1">
+                  {filteredMembers.map((m) => (
                     <label
                       key={m.loginId}
                       className={cx("flex items-center gap-2 text-sm", ui.textMuted)}
                     >
                       <input
-                        type="checkbox"
+                        type="checkbox" className="h-5 w-5"
                         checked={izinIds.includes(m.loginId)}
                         disabled={hadirIds.includes(m.loginId)}
                         onChange={(e) => toggleIzin(m.loginId, e.target.checked)}
@@ -1048,7 +1057,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
           title="Riwayat Presensi"
           ui={ui}
           right={
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 w-[500px]">
               <input
                 value={searchRiwayat}
                 onChange={(e) => setSearchRiwayat(e.target.value)}
@@ -1088,7 +1097,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
             </div>
           }
         >
-        <div className="mt-4 w-full overflow-x-auto max-h-[320px] overflow-y-auto pr-1">
+        <div className="hidden md:block mt-4 w-full overflow-x-auto max-h-[320px] overflow-y-auto pr-1">
           <table className="w-full min-w-[900px] text-sm">
             <thead className={tableHeadClass}>
               <tr>
@@ -1146,6 +1155,35 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
             </tbody>
           </table>
         </div>
+
+        <div className="md:hidden space-y-3">
+          {list.map((p) => (
+            <div key={p.id} className={cx("rounded-xl p-3 ring-1", theme === "dark" ? "ring-slate-800" : "ring-gray-200")}>
+              
+              <div className="font-semibold">{p.title}</div>
+              
+              <div className="text-xs opacity-70 mt-1">
+                {p.type} • {p.date}
+              </div>
+
+              <div className="text-sm mt-2">
+                📍 {p.location}
+              </div>
+
+              <div className="flex justify-between text-sm mt-2">
+                <span>Hadir: {(p.hadir || []).length}</span>
+                <span>Izin: {(p.izin || []).length}</span>
+              </div>
+
+              <button
+                className={cx(ui.btnBase, ui.btnGhost, "mt-3 w-full")}
+                onClick={() => openView(p)}
+              >
+                Lihat Detail
+              </button>
+            </div>
+          ))}
+        </div>
       </Card>
 
       <Card
@@ -1185,7 +1223,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
           Total anggota ditampilkan: {rekap.length}
         </div>
 
-        <div className="mt-4 overflow-x-auto">
+        <div className="hidden md:block mt-4 overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
             <thead className={tableHeadClass}>
               <tr>
@@ -1209,6 +1247,18 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
             </tbody>
           </table>
         </div>
+      <div className="md:hidden space-y-2">
+        {rekap.map((r) => (
+          <div key={r.loginId} className="p-3 rounded-xl ring-1">
+            <div className="font-semibold">{r.name}</div>
+            <div className="text-xs">{r.divisi}</div>
+            <div className="flex justify-between mt-2 text-sm">
+              <span>Internal: {r.internal}</span>
+              <span>Eksternal: {r.eksternal}</span>
+            </div>
+          </div>
+        ))}
+      </div>
       </Card>
 
       <Modal
@@ -1367,6 +1417,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                     <div
                       className={cx(
                         "rounded-2xl border p-1",
+                        "absolute z-50 w-full rounded-2xl border p-1",
                         theme === "dark"
                           ? "border-white/10 bg-slate-950"
                           : "border-gray-200 bg-white"
@@ -1456,7 +1507,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
             <div className={softBoxClass}>
               <div className="text-sm font-semibold">Hadir</div>
               <div className="mt-3 grid grid-cols-1 gap-2">
-                {membersSorted.map((m) => (
+                {filteredMembers.map((m) => (
                   <label
                     key={m.loginId}
                     className={cx(
@@ -1465,8 +1516,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                     )}
                   >
                     <input
-                      type="checkbox"
-                      className={checkboxClass}
+                      type="checkbox" className="h-5 w-5"
                       checked={eHadirIds.includes(m.loginId)}
                       disabled={eIzinIds.includes(m.loginId)}
                       onChange={(e) => toggleEHadir(m.loginId, e.target.checked)}
@@ -1483,7 +1533,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
             <div className={softBoxClass}>
               <div className="text-sm font-semibold">Izin</div>
               <div className="mt-3 grid grid-cols-1 gap-2">
-                {membersSorted.map((m) => (
+                {filteredMembers.map((m) => (
                   <label
                     key={m.loginId}
                     className={cx(
@@ -1492,8 +1542,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                     )}
                   >
                     <input
-                      type="checkbox"
-                      className={checkboxClass}
+                      type="checkbox" className="h-5 w-5"
                       checked={eIzinIds.includes(m.loginId)}
                       disabled={eHadirIds.includes(m.loginId)}
                       onChange={(e) => toggleEIzin(m.loginId, e.target.checked)}
