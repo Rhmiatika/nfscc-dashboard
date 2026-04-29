@@ -457,9 +457,6 @@ export default function ArsipPage({ state, setState, theme, ui }) {
       <div className={ui.card}>
         <div>
           <h1 className="text-2xl font-semibold">Arsip</h1>
-          <p className={cx("mt-2 text-sm", ui.textMuted)}>
-            Arsip digital untuk seluruh link kegiatan, proker, dan anggota.
-          </p>
         </div>
 
         <div className="mt-8 flex flex-wrap gap-4">
@@ -655,8 +652,8 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                           Aktifkan Kembali
                         </button>
                       ) : (
-                        <span className={cx("text-sm", ui.textMuted)}>
-                          Hanya pengguna login yang dapat mengaktifkan kembali data.
+                        <span className={cx("text-xs", ui.textMuted)}>
+                          Hanya Admin yang dapat mengaktifkan kembali.
                         </span>
                       )
                     ) : item.category === "kegiatan" ? (

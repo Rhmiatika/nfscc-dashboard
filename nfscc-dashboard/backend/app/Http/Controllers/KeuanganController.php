@@ -17,9 +17,17 @@ class KeuanganController extends Controller
             $query->where('periode', (string) $request->periode);
         }
 
-        return response()->json(
-            $query->latest('tanggal')->latest()->get()
-        );
+        $items = $query->latest('tanggal')->latest()->get();
+
+        if (!$this->canAccessBukti($request)) {
+            $items->transform(function ($item) {
+                $item->bukti_url = null;
+                $item->bukti_path = null;
+                return $item;
+            });
+        }
+
+        return response()->json($items);
     }
 
     public function store(Request $request)
@@ -132,5 +140,41 @@ class KeuanganController extends Controller
         $keuangan->delete();
 
         return response()->json(['message' => 'Deleted']);
+    }
+
+    private function canAccessBukti(Request $request): bool
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        $divisi = strtolower((string) ($user->divisi ?? ''));
+        $role = strtolower((string) ($user->role ?? ''));
+
+        return $role === 'admin' || $divisi === 'treasurer';
+    }
+
+    public function bukti(Request $request, $id)
+    {
+        if (!$this->canAccessBukti($request)) {
+            return response()->json([
+                'message' => 'Anda tidak memiliki akses untuk melihat bukti transaksi.'
+            ], 403);
+        }
+
+        $keuangan = Keuangan::findOrFail($id);
+
+        if (!$keuangan->bukti_path || !Storage::disk('public')->exists($keuangan->bukti_path)) {
+            return response()->json([
+                'message' => 'Bukti transaksi tidak ditemukan.'
+            ], 404);
+        }
+
+        return Storage::disk('public')->response(
+            $keuangan->bukti_path,
+            $keuangan->bukti_nama
+        );
     }
 }

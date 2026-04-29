@@ -12,7 +12,7 @@ function cx(...arr) {
 
 function Card({ title, right, children, ui }) {
   const sectionHeadingClass =
-    "text-[18px] md:text-[19px] font-semibold leading-tight tracking-tight";
+    "text-sm md:text-[19px] font-semibold leading-tight tracking-tight";
 
   return (
     <div className={ui.card}>

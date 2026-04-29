@@ -403,23 +403,8 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
   function canViewProof(row) {
     if (!isAuthed) return false;
     if (!row?.proof?.url) return false;
-    if (state?.session?.isAdmin) return true;
-    if (isFinanceManager) return true;
 
-    const createdBy = String(
-      row?.dibuatOleh || row?.raw?.dibuatOleh || ""
-    ).trim().toLowerCase();
-
-    const currentLogin = String(sessionLoginId || "").trim().toLowerCase();
-
-    if (createdBy && currentLogin && createdBy === currentLogin) return true;
-
-    if (row?.kind === "kas") {
-      const payerId = String(row?.raw?.memberId || "").trim().toLowerCase();
-      if (payerId && currentLogin && payerId === currentLogin) return true;
-    }
-
-    return false;
+    return !!state?.session?.isAdmin || isFinanceManager;
   }
 
   const finance = periodData.finance || {};
@@ -1480,7 +1465,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
   const normalize = (v) => v?.toLowerCase().replace(/\s/g, "");
 
   const filteredKasRecap = useMemo(() => {
-    if (!divisiFilter) return []; // ⬅️ default kosong
+    if (!divisiFilter) return [];
 
     return allMembersKasRecap.filter((member) => {
       const div = normalize(member?.divisi);
@@ -2058,12 +2043,8 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h2 className={cx("mb-2", sectionTitleClass)}>
-              Kalender Pembayaran Kas {kasCalendarYear}
+              Kalender Kas {myMemberName} {kasCalendarYear} 
             </h2>
-            <p className={cx("text-sm", ui.textMuted)}>
-              Kalender ini menampilkan bulan kas yang sudah dibayarkan oleh{" "}
-              <b>{myMemberName}</b>.
-            </p>
           </div>
 
           <div className={cx("text-sm", ui.textMuted)}>
@@ -2116,7 +2097,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
           <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className={cx("mb-2", sectionTitleClass)}>
-                Rekap Kalender Kas Seluruh Pengurus {kasCalendarYear}
+                Rekap Kas {kasCalendarYear}
               </h2>
             </div>
 
@@ -2246,7 +2227,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
       <div className={ui.card}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className={ui.textMuted}>
-            Riwayat gabungan untuk <b>Kas</b> dan <b>Transaksi Lain</b>.
+            Riwayat Transaksi
           </div>
 
           <div className="flex flex-wrap items-center gap-3 lg:justify-end">
@@ -2265,20 +2246,22 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className={cx("text-sm whitespace-nowrap", ui.textMuted)}>
-                Unduh
-              </span>
-              <select
-                className={cx(ui.select || ui.input, "!mt-0 min-w-[170px]")}
-                value={downloadFilter}
-                onChange={(e) => setDownloadFilter(e.target.value)}
-              >
-                <option value="all">Semua</option>
-                <option value="kas">Kas saja</option>
-                <option value="nonkas">Transaksi lain saja</option>
-              </select>
-            </div>
+            {isAuthed ? (
+              <div className="flex items-center gap-2">
+                <span className={cx("text-sm whitespace-nowrap", ui.textMuted)}>
+                  Unduh
+                </span>
+                <select
+                  className={cx(ui.select || ui.input, "!mt-0 min-w-[170px]")}
+                  value={downloadFilter}
+                  onChange={(e) => setDownloadFilter(e.target.value)}
+                >
+                  <option value="all">Semua</option>
+                  <option value="kas">Kas saja</option>
+                  <option value="nonkas">Transaksi lain saja</option>
+                </select>
+              </div>
+            ) : null}
 
           {canViewFinanceDetail ? (
             <button
@@ -2463,16 +2446,20 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
                 {row.catatan && <div>Catatan: {row.catatan}</div>}
               </div>
 
-              {row.proof?.url && (
-                <a
-                  href={row.proof.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm underline mt-2 inline-block"
-                >
-                  Lihat bukti
-                </a>
-              )}
+              {row.proof?.url ? (
+                canViewProof(row) ? (
+                  <a
+                    className={linkClass}
+                    href={row.proof.url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Lihat bukti
+                  </a>
+                ) : (
+                  <span className={ui.textMuted}>Bukti terkunci</span>
+                )
+              ) : null}
             </div>
           ))}
         </div>

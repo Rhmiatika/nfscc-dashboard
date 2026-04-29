@@ -9,7 +9,7 @@ function Card({ title, right, children, ui }) {
   return (
     <div className={ui.card}>
       <div className="mb-4 flex items-center justify-between gap-4">
-        <div className="text-base font-semibold">{title}</div>
+        <div className="text-sm md:text-base font-semibold">{title}</div>
         {right}
       </div>
       {children}
@@ -712,9 +712,6 @@ const activePeriodLabel =
           >
             <div className="text-sm font-semibold">
               Agenda {formatMonthYearID(calendarMonth)}
-            </div>
-            <div className={cx("mt-1 text-xs", ui.textMuted)}>
-              Menampilkan jadwal kegiatan dan proker pada bulan yang dipilih.
             </div>
 
             <div

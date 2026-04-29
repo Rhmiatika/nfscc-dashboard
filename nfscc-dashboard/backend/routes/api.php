@@ -36,7 +36,6 @@ Route::get('/template-surat/{template_surat}', [TemplateSuratController::class, 
 Route::get('/proker', [ProkerController::class, 'index']);
 Route::get('/kegiatan', [KegiatanController::class, 'index']);
 Route::get('/presensi', [PresensiController::class, 'index']);
-Route::get('/keuangan', [KeuanganController::class, 'index']);
 
 Route::get('/members', [MemberController::class, 'index']);
 Route::get('/members/{member}', [MemberController::class, 'show']);
@@ -52,6 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/kegiatan/{id}/archive', [KegiatanController::class, 'archive']);
     Route::post('/kegiatan/{id}/restore', [KegiatanController::class, 'restore']);
+
+    Route::get('/keuangan', [KeuanganController::class, 'index']);
+    Route::get('/keuangan/{id}/bukti', [KeuanganController::class, 'bukti']);
 
     Route::apiResource('kegiatan', KegiatanController::class)->except(['index']);
     Route::apiResource('presensi', PresensiController::class)->except(['index']);
