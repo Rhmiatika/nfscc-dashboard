@@ -1219,7 +1219,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
           </div>
         }
       >
-        <div className={cx("mt-3 text-sm", ui.textMuted2)}>
+        <div className={cx("mt-3 mb-3 text-sm", ui.textMuted2)}>
           Total anggota ditampilkan: {rekap.length}
         </div>
 
