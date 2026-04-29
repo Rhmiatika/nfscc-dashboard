@@ -166,14 +166,21 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
   useEffect(() => {
     loadAllArchiveData();
-  }, [activePeriodId]);
+  }, []);
 
   const anggotaItems = useMemo(() => {
     return archivedMembers.map((m) => ({
       id: String(m.id),
       category: "anggota",
       title: m.name || "-",
-      periodId: String(m.periodId || ""),
+      periodId: String(
+        m.periodId ||
+        m.period_id ||
+        m.periode ||
+        m.period ||
+        m.activePeriodId ||
+        ""
+      ),
       loginId: m.loginId || "",
       divisi: m.divisi || "",
       position: m.position || "",

@@ -13,6 +13,20 @@ import {
   saveState,
 } from "../storage";
 import { saveBackendState } from "../Services/appStateService";
+import {
+  listMembersApi,
+  archiveMemberApi,
+} from "../Services/memberService";
+
+import {
+  listKegiatanApi,
+  archiveKegiatanApi,
+} from "../Services/kegiatanService";
+
+import {
+  listProkerApi,
+  archiveProkerApi,
+} from "../Services/prokerService";
 
 function cx(...arr) {
   return arr.filter(Boolean).join(" ");
@@ -183,46 +197,84 @@ export default function PeriodePage({ state, setState, theme, ui }) {
       .map((p) => String(p.id));
   }
 
+function getItemPeriodId(item) {
+  return String(
+    item?.periodId ||
+      item?.period_id ||
+      item?.periode ||
+      item?.period ||
+      item?.activePeriodId ||
+      ""
+  );
+}
+
+async function archiveAllDataByPeriod(periodId) {
+  const pid = String(periodId);
+
+  const [members, kegiatans, prokers] = await Promise.all([
+    listMembersApi().catch(() => []),
+    listKegiatanApi().catch(() => []),
+    listProkerApi().catch(() => []),
+  ]);
+
+    const membersToArchive = members.filter(
+      (item) => getItemPeriodId(item) === pid
+    );
+
+    const kegiatanToArchive = kegiatans.filter(
+      (item) => getItemPeriodId(item) === pid
+    );
+
+    const prokerToArchive = prokers.filter(
+      (item) => getItemPeriodId(item) === pid
+    );
+
+    await Promise.all([
+      ...membersToArchive.map((item) =>
+        archiveMemberApi(item.id, "periode_dinonaktifkan")
+      ),
+      ...kegiatanToArchive.map((item) =>
+        archiveKegiatanApi(item.id, "periode_dinonaktifkan")
+      ),
+      ...prokerToArchive.map((item) =>
+        archiveProkerApi(item.id, "periode_dinonaktifkan")
+      ),
+    ]);
+  }
+
   async function onTogglePeriod(p) {
     const pid = String(p?.id || "");
-    const isEnabled = !!p?.isEnabled;
-
     if (!pid) return;
 
-    // Kalau mau dinonaktifkan
-    if (isEnabled) {
-      const ok = setPeriodEnabled(pid, false);
-      if (!ok) {
-        alert("Minimal harus ada 1 periode aktif.");
-        return;
+    const allPeriods = getPeriods() || [];
+    const allIds = allPeriods.map((x) => String(x.id));
+
+    const disabledIds = allIds.filter((id) => id !== pid);
+
+    const ok = window.confirm(
+      `Aktifkan periode ${pid}? Semua data periode lain akan masuk arsip.`
+    );
+
+    if (!ok) return;
+
+    try {
+      for (const disabledId of disabledIds) {
+        await archiveAllDataByPeriod(disabledId);
       }
 
-      const nextActiveId = getCurrentPeriodId();
-      setActivePeriodId(nextActiveId);
-      applyLoadedPeriod(nextActiveId);
+      for (const id of allIds) {
+        setPeriodEnabled(id, id === pid);
+      }
 
-      await syncPeriodsToBackend([pid, nextActiveId], nextActiveId);
-      return;
+      setActivePeriodId(pid);
+      applyLoadedPeriod(pid);
+
+      await syncPeriodsToBackend(allIds, pid);
+
+      alert(`Periode ${pid} berhasil diaktifkan. Data periode lain masuk arsip.`);
+    } catch (err) {
+      alert(err.message || "Gagal mengaktifkan periode dan mengarsipkan data.");
     }
-
-    // Kalau mau diaktifkan:
-    // aktifkan pid, lalu nonaktifkan periode aktif lain
-    const previouslyEnabledIds = getEnabledPeriodsExcept(pid);
-
-    const ok = setPeriodEnabled(pid, true);
-    if (!ok) {
-      alert("Gagal mengaktifkan periode.");
-      return;
-    }
-
-    for (const otherId of previouslyEnabledIds) {
-      setPeriodEnabled(otherId, false);
-    }
-
-    setActivePeriodId(pid);
-    applyLoadedPeriod(pid);
-
-    await syncPeriodsToBackend([pid, ...previouslyEnabledIds], pid);
   }
 
   async function onDeletePeriod(id) {
@@ -338,7 +390,7 @@ export default function PeriodePage({ state, setState, theme, ui }) {
                 </tr>
               </thead>
               <tbody>
-                {periods.map((p) => {
+                {normalizedPeriods.map((p) => {
                   const pid = String(p.id);
                   const locked = pid === "2025" || pid === "2026";
 
@@ -367,7 +419,10 @@ export default function PeriodePage({ state, setState, theme, ui }) {
                               "rounded-xl px-3 py-1.5 text-xs font-semibold",
                               p.isActive ? btnGhost : btnPrimary
                             )}
-                            onClick={() => onTogglePeriod(p)}
+                            onClick={() => {
+                              if (p.isActive) return;
+                              onTogglePeriod(p);
+                            }}
                           >
                             {p.isActive ? "Sedang Aktif" : "Aktifkan"}
                           </button>
@@ -408,7 +463,7 @@ export default function PeriodePage({ state, setState, theme, ui }) {
 
         {/* MOBILE */}
           <div className="md:hidden space-y-3">
-            {periods.map((p) => {
+            {normalizedPeriods.map((p) => {
               const pid = String(p.id);
               const locked = pid === "2025" || pid === "2026";
 
@@ -443,7 +498,10 @@ export default function PeriodePage({ state, setState, theme, ui }) {
                         "rounded-xl px-3 py-1.5 text-xs font-semibold",
                         p.isActive ? btnGhost : btnPrimary
                       )}
-                      onClick={() => onTogglePeriod(p)}
+                      onClick={() => {
+                        if (p.isActive) return;
+                        onTogglePeriod(p);
+                      }}
                     >
                       {p.isActive ? "Sedang Aktif" : "Aktifkan"}
                     </button>
