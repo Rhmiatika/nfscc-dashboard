@@ -174,7 +174,7 @@ function normalizeState(raw) {
   };
 }
 
-const DEFAULT_PUBLIC_PERIOD_ID = "2026";
+const DEFAULT_PUBLIC_PERIOD_ID = String(getCurrentPeriodId() || "2026");
 
 function buildStateForBackend(state) {
   if (!state) return state;
@@ -285,8 +285,14 @@ export default function App() {
         ? {
             ...(saved?.session || {}),
             isAuthed: true,
+            periodId: DEFAULT_PUBLIC_PERIOD_ID,
+            period: DEFAULT_PUBLIC_PERIOD_ID,
           }
-        : makeLoggedOutSession(saved?.session),
+        : makeLoggedOutSession({
+            ...(saved?.session || {}),
+            periodId: DEFAULT_PUBLIC_PERIOD_ID,
+            period: DEFAULT_PUBLIC_PERIOD_ID,
+          }),
     });
   });
 
@@ -380,12 +386,12 @@ export default function App() {
     }
 
     const activePeriodId = String(
-      localState?.session?.periodId ||
+      getCurrentPeriodId() ||
+        localState?.session?.periodId ||
         localState?.session?.period ||
         localState?.activePeriodId ||
         localState?.activePeriod ||
-        getCurrentPeriodId() ||
-        DEFAULT_PUBLIC_PERIOD_ID
+        "2026"
     );
 
     try {
@@ -403,6 +409,11 @@ export default function App() {
         activePeriodId,
         activePeriod: activePeriodId,
         periods: getPeriods(),
+        session: {
+          ...(nextState.session || {}),
+          periodId: activePeriodId,
+          period: activePeriodId,
+        },
         members:
           Array.isArray(freshMembers) && freshMembers.length > 0
             ? freshMembers

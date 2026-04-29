@@ -33,6 +33,13 @@ export async function archiveMemberApi(id, payload = {}) {
   return mapMemberApiToFrontend(data);
 }
 
+export async function archiveMembersByPeriodApi(periodId, payload = {}) {
+  return apiClient.post("/members/archive-by-period", {
+    periode: String(periodId),
+    ...payload,
+  });
+}
+
 export async function restoreMemberApi(id) {
   const data = await apiClient.post(`/members/${id}/restore`, {});
   return mapMemberApiToFrontend(data);

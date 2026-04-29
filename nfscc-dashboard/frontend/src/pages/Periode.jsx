@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  archiveMembersByPeriodApi,
+} from "../Services/memberService";
+import {
   createPeriod,
   deletePeriod,
   getPeriods,
@@ -187,6 +190,7 @@ export default function PeriodePage({ state, setState, theme, ui }) {
     const pid = String(p?.id || "");
     if (!pid) return;
 
+    const oldActiveId = String(getCurrentPeriodId() || "");
     const allIds = (getPeriods() || []).map((x) => String(x.id));
 
     for (const id of allIds) {
@@ -196,7 +200,19 @@ export default function PeriodePage({ state, setState, theme, ui }) {
     setActivePeriodId(pid);
     applyLoadedPeriod(pid);
 
-    await syncPeriodsToBackend(allIds, pid);
+    try {
+      if (oldActiveId && oldActiveId !== pid) {
+        await archiveMembersByPeriodApi(oldActiveId, {
+          reason: "periode_dinonaktifkan",
+          archivedBy: state?.session?.loginId || "admin",
+        });
+      }
+
+      await syncPeriodsToBackend(allIds, pid);
+    } catch (err) {
+      console.error("Gagal arsip periode lama:", err);
+      alert(err?.message || "Periode sudah aktif, tapi arsip anggota gagal.");
+    }
   }
 
   async function onDeletePeriod(id) {

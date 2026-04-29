@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { getPeriods } from "../storage";
 import {
   listArchivedMembersApi,
   restoreMemberApi,
@@ -141,11 +142,18 @@ export default function ArsipPage({ state, setState, theme, ui }) {
   async function loadAllArchiveData() {
     try {
       setLoading(true);
-      const [members, kegiatan, proker] = await Promise.all([
-        listArchivedMembersApi().catch((err) => {
-          console.error("Archived members error:", err);
-          return [];
-        }),
+
+      const periodIds = (getPeriods() || []).map((p) => String(p.id));
+
+      const [membersByPeriod, kegiatan, proker] = await Promise.all([
+        Promise.all(
+          periodIds.map((pid) =>
+            listArchivedMembersApi(pid).catch((err) => {
+              console.error("Archived members error:", pid, err);
+              return [];
+            })
+          )
+        ),
         listArchivedKegiatanApi().catch((err) => {
           console.error("Archived kegiatan error:", err);
           return [];
@@ -156,7 +164,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         }),
       ]);
 
-      setArchivedMembers(Array.isArray(members) ? members : []);
+      setArchivedMembers(membersByPeriod.flat());
       setAllKegiatan(Array.isArray(kegiatan) ? kegiatan : []);
       setAllProker(Array.isArray(proker) ? proker : []);
     } finally {

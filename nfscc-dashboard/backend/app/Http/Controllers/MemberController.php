@@ -133,21 +133,17 @@ class MemberController extends Controller
         return response()->json($members);
     }
 
-    public function archivedIndex(Request $request): JsonResponse
+    public function archivedIndex(Request $request)
     {
-        $query = Member::query()->where('archived', true);
+        $periode = $request->query('periode');
 
-        if ($request->filled('periode')) {
-            $query->where('periode', (string) $request->periode);
+        $query = Member::where('archived', true);
+
+        if (!empty($periode)) {
+            $query->where('periode', $periode);
         }
 
-        $members = $query
-            ->orderByDesc('archived_at')
-            ->orderBy('nama')
-            ->get()
-            ->map(fn ($member) => $this->transformMember($member));
-
-        return response()->json($members);
+        return response()->json($query->orderBy('archived_at', 'desc')->get());
     }
 
     public function store(Request $request): JsonResponse
@@ -316,11 +312,37 @@ class MemberController extends Controller
         $member->update([
             'archived' => true,
             'archived_at' => now(),
-            'archived_by' => $request->input('archived_by'),
-            'archive_reason' => $request->input('archive_reason', 'periode_dinonaktifkan'),
+            'archived_by' => $request->input('archived_by', $request->input('archivedBy')),
+            'archive_reason' => $request->input('archive_reason', $request->input('reason', 'periode_dinonaktifkan')),
         ]);
 
         return response()->json($this->transformMember($member->fresh()));
+    }
+
+    public function archiveByPeriod(Request $request): JsonResponse
+    {
+        $periode = (string) $request->input('periode');
+
+        if ($periode === '') {
+            return response()->json(['message' => 'Periode wajib diisi'], 422);
+        }
+
+        $count = Member::where('periode', $periode)
+            ->where(function ($q) {
+                $q->where('archived', false)
+                ->orWhereNull('archived');
+            })
+            ->update([
+                'archived' => true,
+                'archived_at' => now(),
+                'archived_by' => $request->input('archived_by', $request->input('archivedBy', 'admin')),
+                'archive_reason' => $request->input('archive_reason', $request->input('reason', 'periode_dinonaktifkan')),
+            ]);
+
+        return response()->json([
+            'message' => "Anggota periode {$periode} berhasil diarsipkan",
+            'count' => $count,
+        ]);
     }
 
     public function restore(string $id): JsonResponse

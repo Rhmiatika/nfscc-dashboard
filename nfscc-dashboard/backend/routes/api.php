@@ -41,7 +41,10 @@ Route::get('/members', [MemberController::class, 'index']);
 Route::get('/members/{member}', [MemberController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/members/archive-by-period', [MemberController::class, 'archiveByPeriod']);
+
     Route::apiResource('members', MemberController::class)->except(['index', 'show']);
+
     Route::post('/members/{id}/reset-password', [MemberController::class, 'resetPassword']);
     Route::post('/members/{id}/archive', [MemberController::class, 'archive']);
     Route::post('/members/{id}/restore', [MemberController::class, 'restore']);

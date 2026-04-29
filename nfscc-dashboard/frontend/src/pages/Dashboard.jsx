@@ -140,7 +140,11 @@ export default function DashboardPage({ state, setState, theme, ui }) {
   const members = Array.isArray(state?.members) ? state.members : [];
   const periods = Array.isArray(state?.periods) ? state.periods : [];
   const activePeriodId = String(
-    state?.activePeriodId || state?.activePeriod || "2025"
+    state?.session?.periodId ||
+      state?.session?.period ||
+      state?.activePeriodId ||
+      state?.activePeriod ||
+      "2026"
   );
 
   const memberNameByLoginId = useMemo(() => {
@@ -229,10 +233,7 @@ const activePeriodLabel =
       .slice(0, 5);
   }, [prokerSource]);
 
-  const dashboardTitle =
-  state?.dashboard?.title ||
-  state?.dashboardTitle ||
-  activePeriodLabel;
+  const dashboardTitle = activePeriodLabel;
 
   const DEFAULT_BANNER = "";
 
