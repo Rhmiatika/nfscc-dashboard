@@ -30,7 +30,7 @@ function Modal({ open, title, onClose, children, ui, theme }) {
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div
           className={cx(
-            "w-full max-w-3xl rounded-3xl border p-6 shadow-2xl",
+            "w-full max-w-2xl mb-5 max-h-[95vh] overflow-y-auto rounded-2xl border p-4 md:p-6 shadow-2xl",
             theme === "dark"
               ? "border-white/10 bg-slate-950"
               : "border-gray-200 bg-white"
@@ -229,12 +229,15 @@ const activePeriodLabel =
       .slice(0, 5);
   }, [prokerSource]);
 
-  const dashboardTitle = activePeriodLabel;
+  const dashboardTitle =
+  state?.dashboard?.title ||
+  state?.dashboardTitle ||
+  activePeriodLabel;
+
+  const DEFAULT_BANNER = "";
 
   const dashboardBanner =
-    state?.dashboard?.banner ||
-    state?.dashboardBanner ||
-    "/keyteams.jpeg";
+    state?.dashboard?.banner || DEFAULT_BANNER;
 
   const [editOpen, setEditOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(dashboardTitle);
@@ -440,14 +443,22 @@ const activePeriodLabel =
 
   function resetBanner() {
     if (!isAdmin) return;
+
     setState((prev) => ({
       ...prev,
       dashboard: {
         ...(prev.dashboard || {}),
-        title: prev?.meta?.periodLabel || activePeriodLabel,
-        banner: "",
+        title: activePeriodLabel,
+        banner: DEFAULT_BANNER,
       },
+      dashboardBanner: undefined,
+      dashboardTitle: undefined,
     }));
+
+    setEditTitle(activePeriodLabel);
+    setEditBannerPreview(DEFAULT_BANNER);
+    setEditBannerData("");
+    setEditError("");
   }
 
   return (
@@ -509,16 +520,29 @@ const activePeriodLabel =
             theme === "dark" ? "ring-slate-800" : "ring-gray-200"
           )}
         >
-          <img
-            src={dashboardBanner}
-            alt="Banner kegiatan NFSCC"
-            className="h-auto w-full object-contain md:max-h-[500px] md:object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-              const next = e.currentTarget.nextSibling;
-              if (next) next.style.display = "grid";
-            }}
-          />
+          {dashboardBanner ? (
+            <img
+              src={dashboardBanner}
+              alt="Banner kegiatan NFSCC"
+              className="h-auto w-full object-contain md:max-h-[500px] md:object-cover"
+            />
+          ) : (
+            <div
+              className={cx(
+                "h-[180px] w-full grid place-items-center rounded-2xl",
+                theme === "dark"
+                  ? "bg-slate-950/40 text-slate-300"
+                  : "bg-gray-50 text-gray-500"
+              )}
+            >
+              <div className="text-center">
+                <div className="text-sm font-semibold">Banner belum diatur</div>
+                <div className="text-xs opacity-80">
+                  Klik Edit untuk menambahkan gambar.
+                </div>
+              </div>
+            </div>
+          )}
 
           <div
             style={{ display: "none" }}
@@ -935,7 +959,7 @@ const activePeriodLabel =
               <img
                 src={editBannerPreview}
                 alt="Preview banner dashboard"
-                className="h-[260px] w-full object-cover"
+                className="h-[160px] md:h-[220px] w-full object-cover"
               />
             </div>
           </div>
