@@ -73,11 +73,9 @@ export async function listArchivedProkerApi(periodId) {
   return Array.isArray(data) ? data.map(mapProkerApiToFrontend) : [];
 }
 
-export async function archiveProkerApi(id, reason = "periode_dinonaktifkan") {
-  return apiFetch(`/proker/${id}/archive`, {
-    method: "POST",
-    body: JSON.stringify({ reason }),
-  });
+export async function archiveProkerApi(id, payload = {}) {
+  const data = await apiClient.post(`/proker/${id}/archive`, payload);
+  return mapProkerApiToFrontend(data);
 }
 
 export async function restoreProkerApi(id) {

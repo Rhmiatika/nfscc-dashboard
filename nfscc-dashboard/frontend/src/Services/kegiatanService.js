@@ -64,11 +64,9 @@ export async function listArchivedKegiatanApi(periodId) {
   return Array.isArray(data) ? data.map(mapKegiatanApiToFrontend) : [];
 }
 
-export async function archiveKegiatanApi(id, reason = "periode_dinonaktifkan") {
-  return apiFetch(`/kegiatan/${id}/archive`, {
-    method: "POST",
-    body: JSON.stringify({ reason }),
-  });
+export async function archiveKegiatanApi(id, payload = {}) {
+  const data = await apiClient.post(`/kegiatan/${id}/archive`, payload);
+  return mapKegiatanApiToFrontend(data);
 }
 
 export async function restoreKegiatanApi(id) {

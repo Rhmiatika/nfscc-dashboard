@@ -13,20 +13,6 @@ import {
   saveState,
 } from "../storage";
 import { saveBackendState } from "../Services/appStateService";
-import {
-  listMembersApi,
-  archiveMemberApi,
-} from "../Services/memberService";
-
-import {
-  listKegiatanApi,
-  archiveKegiatanApi,
-} from "../Services/kegiatanService";
-
-import {
-  listProkerApi,
-  archiveProkerApi,
-} from "../Services/prokerService";
 
 function cx(...arr) {
   return arr.filter(Boolean).join(" ");
@@ -197,84 +183,20 @@ export default function PeriodePage({ state, setState, theme, ui }) {
       .map((p) => String(p.id));
   }
 
-function getItemPeriodId(item) {
-  return String(
-    item?.periodId ||
-      item?.period_id ||
-      item?.periode ||
-      item?.period ||
-      item?.activePeriodId ||
-      ""
-  );
-}
-
-async function archiveAllDataByPeriod(periodId) {
-  const pid = String(periodId);
-
-  const [members, kegiatans, prokers] = await Promise.all([
-    listMembersApi().catch(() => []),
-    listKegiatanApi().catch(() => []),
-    listProkerApi().catch(() => []),
-  ]);
-
-    const membersToArchive = members.filter(
-      (item) => getItemPeriodId(item) === pid
-    );
-
-    const kegiatanToArchive = kegiatans.filter(
-      (item) => getItemPeriodId(item) === pid
-    );
-
-    const prokerToArchive = prokers.filter(
-      (item) => getItemPeriodId(item) === pid
-    );
-
-    await Promise.all([
-      ...membersToArchive.map((item) =>
-        archiveMemberApi(item.id, "periode_dinonaktifkan")
-      ),
-      ...kegiatanToArchive.map((item) =>
-        archiveKegiatanApi(item.id, "periode_dinonaktifkan")
-      ),
-      ...prokerToArchive.map((item) =>
-        archiveProkerApi(item.id, "periode_dinonaktifkan")
-      ),
-    ]);
-  }
-
   async function onTogglePeriod(p) {
     const pid = String(p?.id || "");
     if (!pid) return;
 
-    const allPeriods = getPeriods() || [];
-    const allIds = allPeriods.map((x) => String(x.id));
+    const allIds = (getPeriods() || []).map((x) => String(x.id));
 
-    const disabledIds = allIds.filter((id) => id !== pid);
-
-    const ok = window.confirm(
-      `Aktifkan periode ${pid}? Semua data periode lain akan masuk arsip.`
-    );
-
-    if (!ok) return;
-
-    try {
-      for (const disabledId of disabledIds) {
-        await archiveAllDataByPeriod(disabledId);
-      }
-
-      for (const id of allIds) {
-        setPeriodEnabled(id, id === pid);
-      }
-
-      setActivePeriodId(pid);
-      applyLoadedPeriod(pid);
-
-      await syncPeriodsToBackend(allIds, pid);
-
-      alert(`Periode ${pid} berhasil diaktifkan. Data periode lain masuk arsip.`);
-    } catch (err) {
-      alert(err.message || "Gagal mengaktifkan periode dan mengarsipkan data.");
+    for (const id of allIds) {
+      setPeriodEnabled(id, id === pid);
     }
+
+    setActivePeriodId(pid);
+    applyLoadedPeriod(pid);
+
+    await syncPeriodsToBackend(allIds, pid);
   }
 
   async function onDeletePeriod(id) {
@@ -305,7 +227,7 @@ async function archiveAllDataByPeriod(periodId) {
       <div className={ui.card}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">Kelola Periode</h1>
+            <h1 className="text-lg font-semibold">Kelola Periode</h1>
             <p className={cx("mt-2 text-sm", ui.textMuted)}>
               {/* Tambah/hapus periode hanya bisa dilakukan oleh Admin. */}
             </p>
@@ -532,7 +454,7 @@ async function archiveAllDataByPeriod(periodId) {
           <div className={cx("mt-4 text-xs", ui.textMuted2)}>
             Note:
             <br />
-              Kosongkan untuk membuat domain otomatis mengikuti periode yang aktif.
+            - Kosongkan untuk membuat domain otomatis mengikuti periode yang aktif.
             <br />
             - Minimal harus ada satu periode aktif.
           </div>

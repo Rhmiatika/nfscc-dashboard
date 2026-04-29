@@ -28,11 +28,9 @@ export async function listArchivedMembersApi(periodId) {
   return Array.isArray(data) ? data.map(mapMemberApiToFrontend) : [];
 }
 
-export async function archiveMemberApi(id, reason = "periode_dinonaktifkan") {
-  return apiFetch(`/members/${id}/archive`, {
-    method: "POST",
-    body: JSON.stringify({ reason }),
-  });
+export async function archiveMemberApi(id, payload = {}) {
+  const data = await apiClient.post(`/members/${id}/archive`, payload);
+  return mapMemberApiToFrontend(data);
 }
 
 export async function restoreMemberApi(id) {
