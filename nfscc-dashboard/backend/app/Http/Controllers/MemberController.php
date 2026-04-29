@@ -133,17 +133,22 @@ class MemberController extends Controller
         return response()->json($members);
     }
 
-    public function archivedIndex(Request $request)
+    public function archivedIndex(Request $request): JsonResponse
     {
         $periode = $request->query('periode');
 
         $query = Member::where('archived', true);
 
         if (!empty($periode)) {
-            $query->where('periode', $periode);
+            $query->where('periode', (string) $periode);
         }
 
-        return response()->json($query->orderBy('archived_at', 'desc')->get());
+        $members = $query
+            ->orderBy('archived_at', 'desc')
+            ->get()
+            ->map(fn ($member) => $this->transformMember($member));
+
+        return response()->json($members);
     }
 
     public function store(Request $request): JsonResponse
