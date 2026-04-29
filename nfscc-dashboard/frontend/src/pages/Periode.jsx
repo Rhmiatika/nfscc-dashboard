@@ -191,6 +191,7 @@ export default function PeriodePage({ state, setState, theme, ui }) {
     if (!pid) return;
 
     const allPeriods = getPeriods() || [];
+
     const oldActiveId = String(
       allPeriods.find((x) => x.isActive)?.id ||
         getCurrentPeriodId() ||
@@ -207,8 +208,14 @@ export default function PeriodePage({ state, setState, theme, ui }) {
         });
       }
 
+      // AKTIFKAN PERIODE BARU DULU
+      setPeriodEnabled(pid, true);
+
+      // BARU NONAKTIFKAN PERIODE LAIN
       for (const id of allIds) {
-        setPeriodEnabled(id, id === pid);
+        if (id !== pid) {
+          setPeriodEnabled(id, false);
+        }
       }
 
       setActivePeriodId(pid);
