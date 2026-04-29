@@ -506,7 +506,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="text-xl font-semibold">
-                Folder Periode Arsip{" "}
+                Folder Arsip{" "}
                 {activeFolder === "kegiatan"
                   ? "Kegiatan"
                   : activeFolder === "proker"
