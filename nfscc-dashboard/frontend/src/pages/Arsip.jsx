@@ -143,7 +143,13 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     try {
       setLoading(true);
 
-      const periodIds = (getPeriods() || []).map((p) => String(p.id));
+      const periodIds = Array.from(
+        new Set([
+          "2025",
+          "2026",
+          ...(getPeriods() || []).map((p) => String(p.id)),
+        ])
+      );
 
       const [allMembers, membersByPeriod, kegiatan, proker] = await Promise.all([
         listArchivedMembersApi().catch((err) => {
