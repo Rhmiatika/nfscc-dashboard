@@ -227,13 +227,17 @@ export default function LoginPage({
       return;
     }
 
-    const userPeriod = String(user?.periode || "2026");
-
-    const periodState = loadStateForPeriod(userPeriod);
-
     const role = String(user?.role || "staff").toLowerCase();
     const isAdmin = role === "admin";
     const isEC = role === "ec";
+
+    const activePeriodNow = String(getCurrentPeriodId() || "2026");
+
+    const userPeriod = isAdmin
+      ? activePeriodNow
+      : String(user?.periode || activePeriodNow);
+
+    const periodState = loadStateForPeriod(userPeriod);
 
     applyLoggedInState(userPeriod, periodState, {
       isAuthed: true,

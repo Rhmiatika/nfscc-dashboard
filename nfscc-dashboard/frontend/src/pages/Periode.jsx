@@ -190,15 +190,14 @@ export default function PeriodePage({ state, setState, theme, ui }) {
     const pid = String(p?.id || "");
     if (!pid) return;
 
-    const oldActiveId = String(getCurrentPeriodId() || "");
-    const allIds = (getPeriods() || []).map((x) => String(x.id));
+    const allPeriods = getPeriods() || [];
+    const oldActiveId = String(
+      allPeriods.find((x) => x.isActive)?.id ||
+        getCurrentPeriodId() ||
+        ""
+    );
 
-    for (const id of allIds) {
-      setPeriodEnabled(id, id === pid);
-    }
-
-    setActivePeriodId(pid);
-    applyLoadedPeriod(pid);
+    const allIds = allPeriods.map((x) => String(x.id));
 
     try {
       if (oldActiveId && oldActiveId !== pid) {
@@ -208,10 +207,17 @@ export default function PeriodePage({ state, setState, theme, ui }) {
         });
       }
 
+      for (const id of allIds) {
+        setPeriodEnabled(id, id === pid);
+      }
+
+      setActivePeriodId(pid);
+      applyLoadedPeriod(pid);
+
       await syncPeriodsToBackend(allIds, pid);
     } catch (err) {
-      console.error("Gagal arsip periode lama:", err);
-      alert(err?.message || "Periode sudah aktif, tapi arsip anggota gagal.");
+      console.error("Gagal mengaktifkan periode:", err);
+      alert(err?.message || "Gagal mengaktifkan periode.");
     }
   }
 
