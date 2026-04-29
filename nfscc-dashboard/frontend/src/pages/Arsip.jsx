@@ -145,7 +145,12 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
       const periodIds = (getPeriods() || []).map((p) => String(p.id));
 
-      const [membersByPeriod, kegiatan, proker] = await Promise.all([
+      const [allMembers, membersByPeriod, kegiatan, proker] = await Promise.all([
+        listArchivedMembersApi().catch((err) => {
+          console.error("All archived members error:", err);
+          return [];
+        }),
+
         Promise.all(
           periodIds.map((pid) =>
             listArchivedMembersApi(pid).catch((err) => {
@@ -154,17 +159,24 @@ export default function ArsipPage({ state, setState, theme, ui }) {
             })
           )
         ),
+
         listArchivedKegiatanApi().catch((err) => {
           console.error("Archived kegiatan error:", err);
           return [];
         }),
+
         listArchivedProkerApi().catch((err) => {
           console.error("Archived proker error:", err);
           return [];
         }),
       ]);
 
-      setArchivedMembers(membersByPeriod.flat());
+      const mergedMembers = [...allMembers, ...membersByPeriod.flat()];
+      const uniqueMembers = Array.from(
+        new Map(mergedMembers.map((m) => [String(m.id), m])).values()
+      );
+
+      setArchivedMembers(uniqueMembers);
       setAllKegiatan(Array.isArray(kegiatan) ? kegiatan : []);
       setAllProker(Array.isArray(proker) ? proker : []);
     } finally {
