@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { getPeriods } from "../storage";
 import {
   listMembersApi,
   createMemberApi,
@@ -21,6 +22,12 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
 
   const role = String(state?.session?.role || "staff").toLowerCase();
   const canManage = role === "admin" || role === "ec";
+  const periods = useMemo(() => {
+    return getPeriods() || [
+      { id: "2025", label: "Periode 2025" },
+      { id: "2026", label: "Periode 2026" },
+    ];
+  }, [state?.periods]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -88,6 +95,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
 
   function resetForm() {
     setEditingId(null);
+
     setForm({
       name: "",
       loginId: "",
@@ -97,6 +105,10 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
       periodId: activePeriod,
       isEC: false,
     });
+
+    setTimeout(() => {
+      document.querySelector("input")?.focus();
+    }, 0);
   }
 
   function onChange(field, value) {
@@ -124,7 +136,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
       ...form,
       loginId: form.loginId.trim().toLowerCase(),
       isEC: detectIsEC(form.position),
-      periodId: activePeriod,
+      periodId: form.periodId || activePeriod,
     };
 
     try {
@@ -145,6 +157,10 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           members: [...(prev.members || []), created],
         }));
       }
+
+      await loadMembers();
+
+      alert(editingId ? "Berhasil update anggota" : "Berhasil tambah anggota");
 
       resetForm();
     } catch (err) {
@@ -252,6 +268,18 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
             value={form.tahunAngkatan}
             onChange={(e) => onChange("tahunAngkatan", e.target.value)}
           />
+
+          <select
+            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
+            value={form.periodId}
+            onChange={(e) => onChange("periodId", e.target.value)}
+          >
+            {periods.map((p) => (
+              <option key={p.id} value={String(p.id)}>
+                {p.label || `Periode ${p.id}`}
+              </option>
+            ))}
+          </select>
 
           <div className="md:col-span-2 flex gap-3">
             <button

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { updatePasswordApi, logoutApi } from "../Services/authService";
 import { updateMemberApi, listMembersApi } from "../Services/memberService";
@@ -224,6 +225,7 @@ export default function NavbarLayout({ state, setState, theme, ui, onToggleTheme
   const [formDivisi, setFormDivisi] = useState("");
   const [formLoginId, setFormLoginId] = useState("");
   const [formNewPass, setFormNewPass] = useState("");
+  const [showFormNewPass, setShowFormNewPass] = useState(false);
   const [formPhoto, setFormPhoto] = useState("");
 
   function openProfileModal() {
@@ -611,13 +613,26 @@ export default function NavbarLayout({ state, setState, theme, ui, onToggleTheme
                 <div className={cx("mb-1 text-sm font-medium", mutedText(theme))}>
                   Password Baru (opsional)
                 </div>
-                <input
-                  type="password"
-                  value={formNewPass}
-                  onChange={(e) => setFormNewPass(e.target.value)}
-                  className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
-                  placeholder="Minimal 3 karakter"
-                />
+                <div className="relative">
+                  <input
+                    type={showFormNewPass ? "text" : "password"}
+                    value={formNewPass}
+                    onChange={(e) => setFormNewPass(e.target.value)}
+                    className={cx(
+                      ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
+                      "pr-12"
+                    )}
+                    placeholder="Minimal 3 karakter"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowFormNewPass((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showFormNewPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-2 flex gap-2">

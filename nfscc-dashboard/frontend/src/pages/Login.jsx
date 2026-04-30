@@ -8,6 +8,7 @@ import {
   setCurrentPeriodId,
   saveState,
 } from "../storage";
+import { Eye, EyeOff } from "lucide-react";
 
 function cx(...arr) {
   return arr.filter(Boolean).join(" ");
@@ -99,6 +100,9 @@ export default function LoginPage({
   const [tab, setTab] = useState("login");
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showNewPass2, setShowNewPass2] = useState(false);
 
   const [newPassLoginId, setNewPassLoginId] = useState("");
   const [newPass, setNewPass] = useState("");
@@ -411,14 +415,24 @@ export default function LoginPage({
                   >
                     Password
                   </div>
+                <div className="relative">
                   <input
-                    type="password"
-                    className={inputCls}
+                    type={showPassword ? "text" : "password"}
+                    className={cx(inputCls, "pr-12")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="•••"
                     autoComplete="current-password"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 </div>
 
                 <div className="text-right">
@@ -501,14 +515,24 @@ export default function LoginPage({
                   >
                     Password Baru
                   </div>
-                  <input
-                    type="password"
-                    className={inputCls}
-                    value={newPass}
-                    onChange={(e) => setNewPass(e.target.value)}
-                    placeholder="Minimal 3 karakter"
-                    autoComplete="new-password"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPass ? "text" : "password"}
+                      className={cx(inputCls, "pr-12")}
+                      value={newPass}
+                      onChange={(e) => setNewPass(e.target.value)}
+                      placeholder="Minimal 3 karakter"
+                      autoComplete="new-password"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPass((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showNewPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -520,14 +544,24 @@ export default function LoginPage({
                   >
                     Ulangi Password
                   </div>
-                  <input
-                    type="password"
-                    className={inputCls}
-                    value={newPass2}
-                    onChange={(e) => setNewPass2(e.target.value)}
-                    placeholder="Ulangi password"
-                    autoComplete="new-password"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPass2 ? "text" : "password"}
+                      className={cx(inputCls, "pr-12")}
+                      value={newPass2}
+                      onChange={(e) => setNewPass2(e.target.value)}
+                      placeholder="Ulangi password"
+                      autoComplete="new-password"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPass2((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showNewPass2 ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
 
                 {error ? (
