@@ -19,14 +19,6 @@ class KeuanganController extends Controller
 
         $items = $query->latest('tanggal')->latest()->get();
 
-        if (!$this->canAccessBukti($request)) {
-            $items->transform(function ($item) {
-                $item->bukti_url = null;
-                $item->bukti_path = null;
-                return $item;
-            });
-        }
-
         return response()->json($items);
     }
 
@@ -127,7 +119,7 @@ class KeuanganController extends Controller
         }
 
         $keuangan->update($validated);
-        
+
         return response()->json($keuangan->fresh());
     }
 
