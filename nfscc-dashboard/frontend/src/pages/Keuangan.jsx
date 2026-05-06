@@ -836,9 +836,15 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
         });
       });
 
-      setKasCatatan("");
-      setKasProof(null);
-      if (proofInputRef.current) proofInputRef.current.value = "";
+    setKasTanggal(getDefaultDateByPeriod(periodKey));
+    setKasMemberId(members[0]?.loginId ? String(members[0].loginId) : "");
+    setKasStartMonth(getDefaultMonthByPeriod(periodKey));
+    setKasEndMonth(getDefaultMonthByPeriod(periodKey));
+    setKasCatatan("");
+    setKasProof(null);
+    setKasError("");
+
+    if (proofInputRef.current) proofInputRef.current.value = "";
     } catch (err) {
       setKasError(err.message || "Gagal menyimpan pembayaran kas.");
     }
@@ -897,11 +903,15 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
         });
       });
 
+      setTTanggal(getDefaultDateByPeriod(periodKey));
+      setTDivisi(String(me?.divisi || me?.division || "Treasurer"));
+      setTTipe("Masuk");
       setTKategori("");
       setTNominal("");
       setTCatatan("");
       setTProof(null);
       setTError("");
+
       if (nonKasProofInputRef.current) nonKasProofInputRef.current.value = "";
     } catch (err) {
       setSyncError(err.message || "Gagal menyimpan transaksi non-kas.");
