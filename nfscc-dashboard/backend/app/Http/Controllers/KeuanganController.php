@@ -112,7 +112,6 @@ class KeuanganController extends Controller
             'nominal_per_bulan' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        $keuangan->update($validated);
         if ($request->hasFile('bukti')) {
             if ($keuangan->bukti_path && Storage::disk('public')->exists($keuangan->bukti_path)) {
                 Storage::disk('public')->delete($keuangan->bukti_path);
@@ -126,6 +125,9 @@ class KeuanganController extends Controller
             $validated['bukti_path'] = $path;
             $validated['bukti_url'] = asset('storage/' . $path);
         }
+
+        $keuangan->update($validated);
+        
         return response()->json($keuangan->fresh());
     }
 
