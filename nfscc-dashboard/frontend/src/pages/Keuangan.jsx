@@ -524,18 +524,13 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
   }, [periodKey]);
 
   useEffect(() => {
-    if (isFinanceManager) {
-      setKasMemberId((prev) => {
-        if (prev) return prev;
-        return members[0]?.loginId ? String(members[0].loginId) : "";
-      });
-    } else {
+    if (!isFinanceManager) {
       setKasMemberId(myMemberId || "");
     }
-  }, [isFinanceManager, myMemberId, members]);
+  }, [isFinanceManager, myMemberId]);
 
   const effectiveKasMemberId = isFinanceManager
-    ? kasMemberId || (members[0]?.loginId ? String(members[0].loginId) : "")
+    ? kasMemberId
     : myMemberId;
 
   const effectiveKasMember =
@@ -837,7 +832,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
       });
 
     setKasTanggal(getDefaultDateByPeriod(periodKey));
-    setKasMemberId(members[0]?.loginId ? String(members[0].loginId) : "");
+    setKasMemberId("");
     setKasStartMonth(getDefaultMonthByPeriod(periodKey));
     setKasEndMonth(getDefaultMonthByPeriod(periodKey));
     setKasCatatan("");
@@ -1814,8 +1809,10 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
                       value={kasMemberId}
                       onChange={(e) => setKasMemberId(e.target.value)}
                     >
+                      <option value="">Pilih Anggota</option>
+
                       {members.length === 0 ? (
-                        <option value="">Belum ada anggota</option>
+                        <option value="" disabled>Belum ada anggota</option>
                       ) : (
                         members.map((m) => (
                           <option key={m.loginId} value={String(m.loginId)}>
