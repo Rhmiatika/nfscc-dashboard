@@ -107,6 +107,21 @@ function normalizeDivisiName(value) {
   return map[v] || v;
 }
 
+function getDisplayDivisi(value) {
+  const normalized = normalizeDivisiName(value);
+
+  const map = {
+    "public relation": "PR",
+    "human resource development": "HRD",
+    "creative media and documentation": "CMD",
+    "research and education": "R&E",
+    "research and development": "R&D",
+    "public design and documentation": "PDD",
+  };
+
+  return map[normalized] || value || "-";
+}
+
 export default function ProkerPage({ state, setState, theme, ui, utils }) {
   const members = Array.isArray(state?.members) ? state.members : [];
   const prokerList = Array.isArray(state?.proker) ? state.proker : [];
@@ -350,6 +365,10 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
     if (!finalDate) return alert("Tanggal wajib diisi.");
     if (!finalPic) return alert("PIC wajib dipilih.");
 
+    const selectedPicMember = members.find(
+      (m) => String(m.loginId || m.email) === finalPic
+    );
+
     const nextItem = {
       periodId: activePeriodId,
       title: finalTitle,
@@ -364,6 +383,8 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       notulensiLink: String(notulensiLink || "").trim(),
       hiddenFromProkerPage: false,
       archived: false,
+      picName: selectedPicMember?.name || selectedPicMember?.nama || finalPic,
+      divisiLabel: getDisplayDivisi(finalDivisi),
     };
 
     try {
@@ -532,6 +553,10 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
     if (!finalDate) return alert("Tanggal wajib diisi.");
     if (!finalPic) return alert("PIC wajib dipilih.");
 
+    const selectedPicMember = members.find(
+      (m) => String(m.loginId || m.email) === finalPic
+    );
+
     const payload = {
       ...editingItem,
       periodId: editingItem.periodId || activePeriodId,
@@ -546,6 +571,8 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       docLink: String(eDocLink || "").trim(),
       notulensiLink: String(eNotulensiLink || "").trim(),
       archived: editingItem.archived ?? false,
+      picName: selectedPicMember?.name || selectedPicMember?.nama || finalPic,
+      divisiLabel: getDisplayDivisi(finalDivisi),
     };
 
     try {
@@ -590,8 +617,19 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
     }
   }
 
-  function getPicName(loginId) {
-    return members.find((m) => m.loginId === loginId)?.name || "-";
+  function getPicName(loginId, item = null) {
+    if (item?.picName) return item.picName;
+    if (item?.pic_name) return item.pic_name;
+    if (item?.picNama) return item.picNama;
+
+    const key = String(loginId || "").trim().toLowerCase();
+
+    const found = members.find((m) => {
+      const mLogin = String(m.loginId || m.email || "").trim().toLowerCase();
+      return mLogin === key;
+    });
+
+    return found?.name || found?.nama || loginId || "-";
   }
 
   return (
@@ -809,9 +847,9 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                         ) : null}
                       </td>
 
-                      <td className={tdClass}>{item.divisi || "-"}</td>
+                      <td className={tdClass}>{item.divisiLabel || getDisplayDivisi(item.divisi)}</td>
                       <td className={tdClass}>{item.date || "-"}</td>
-                      <td className={tdClass}>{getPicName(item.pic)}</td>
+                      <td className={tdClass}>{getPicName(item.pic, item)}</td>
 
                       <td className={tdClass}>
                         <span className={getStatusBadge(item.status, ui)}>
@@ -902,7 +940,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                     <div>
                       <div className="font-semibold">{item.title}</div>
                       <div className={ui.textMuted}>
-                        {item.divisi} • {item.date}
+                        {item.divisiLabel || getDisplayDivisi(item.divisi)} • {item.date}
                       </div>
                     </div>
 
@@ -913,7 +951,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
 
                   {/* BODY */}
                   <div className="mt-2 text-sm space-y-1">
-                    <div>PIC: {getPicName(item.pic)}</div>
+                    <div>PIC: {getPicName(item.pic, item)}</div>
                     <div>
                       Anggaran:{" "}
                       {item.budget
@@ -979,7 +1017,9 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
 
               <div>
                 <div className={ui.textMuted2}>Divisi</div>
-                <div className="font-semibold">{active.divisi || "-"}</div>
+                <div className="font-semibold">
+                  {active.divisiLabel || getDisplayDivisi(active.divisi)}
+                </div>
               </div>
 
               <div>
@@ -989,7 +1029,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
 
               <div>
                 <div className={ui.textMuted2}>PIC</div>
-                <div className="font-semibold">{getPicName(active.pic)}</div>
+                <div className="font-semibold">{getPicName(active.pic, active)}</div>
               </div>
 
               <div>
