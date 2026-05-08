@@ -2199,7 +2199,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
           </div>
 
           {/* MOBILE */}
-          <div className="md:hidden space-y-3">
+          <div className="md:hidden space-y-3 mt-4">
             {filteredKasRecap.map((member) => (
               <div key={member.loginId || member.name} className={ui.card}>
                 <div className="font-medium">{member.name}</div>
@@ -2283,9 +2283,9 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
         </div>
 
           {/* DEKSTOP */}
-        <div className="mt-4 hidden md:block overflow-x-auto">
+          <div className="hidden md:block mt-4 w-full overflow-x-auto max-h-[320px] overflow-y-auto pr-1">
           {canViewFinanceDetail ? (
-            <table className="w-full min-w-[1280px] text-sm">
+            <table className="w-full min-w-[1420px] text-sm">
               <thead className={tableHeadClass}>
                 <tr>
                   <th className="py-2 px-4 text-left whitespace-nowrap">Jenis</th>
