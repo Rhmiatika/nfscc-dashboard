@@ -2199,7 +2199,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
           </div>
 
           {/* MOBILE */}
-          <div className="md:hidden space-y-3 mt-4">
+          <div className="md:hidden space-y-3">
             {filteredKasRecap.map((member) => (
               <div key={member.loginId || member.name} className={ui.card}>
                 <div className="font-medium">{member.name}</div>
@@ -2433,7 +2433,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
         </div>
 
         {/* MOBILE */}
-        <div className="mt-4 md:hidden space-y-3">
+        <div className="md:hidden space-y-3 mt-4">
           {filteredHistory.map((row) => (
             <div key={`${row.kind}-${row.id}`} className={ui.card}>
               <div className="flex justify-between items-center">
