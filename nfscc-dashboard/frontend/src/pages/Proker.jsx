@@ -75,6 +75,38 @@ function isPastDate(dateString) {
   return picked < today;
 }
 
+function normalizeDivisiName(value) {
+  const v = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/\s+/g, " ");
+
+  const map = {
+    pr: "public relation",
+    "public relations": "public relation",
+
+    hrd: "human resource development",
+    hr: "human resource development",
+
+    cmd: "creative media and documentation",
+    "creative media & documentation": "creative media and documentation",
+
+    pdd: "public design and documentation",
+    "public design & documentation" : "public design and documentation",
+
+    "r&e": "research and education",
+    "r and e": "research and education",
+    "research & education": "research and education",
+
+    "r&d": "research and development",
+    "r and d": "research and development",
+    "research & development": "research and development",
+  };
+
+  return map[v] || v;
+}
+
 export default function ProkerPage({ state, setState, theme, ui, utils }) {
   const members = Array.isArray(state?.members) ? state.members : [];
   const prokerList = Array.isArray(state?.proker) ? state.proker : [];
@@ -267,9 +299,10 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   }
 
   const picOptions = useMemo(() => {
+    const selectedDiv = normalizeDivisiName(divisi);
+
     const base = members.filter((m) => {
-      const memberDiv = String(m?.divisi || "").trim().toLowerCase();
-      const selectedDiv = String(divisi || "").trim().toLowerCase();
+      const memberDiv = normalizeDivisiName(m?.divisi);
       return memberDiv === selectedDiv;
     });
 
@@ -397,12 +430,10 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   const [eNotulensiLink, setENotulensiLink] = useState("");
 
   const editPicOptions = useMemo(() => {
+    const selectedDiv = normalizeDivisiName(eDivisi);
+
     return members
-      .filter(
-        (m) =>
-          String(m?.divisi || "").trim().toLowerCase() ===
-          String(eDivisi || "").trim().toLowerCase()
-      )
+      .filter((m) => normalizeDivisiName(m?.divisi) === selectedDiv)
       .sort((a, b) =>
         String(a?.name || "").localeCompare(String(b?.name || ""))
       );
