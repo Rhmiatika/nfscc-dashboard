@@ -79,7 +79,7 @@ function normalizeDivisiName(value) {
   const v = String(value || "")
     .trim()
     .toLowerCase()
-    .replace(/&/g, "and")
+    .replace(/&/g, " and ")
     .replace(/\s+/g, " ");
 
   const map = {
@@ -90,18 +90,18 @@ function normalizeDivisiName(value) {
     hr: "human resource development",
 
     cmd: "creative media and documentation",
-    "creative media & documentation": "creative media and documentation",
+    "creative media documentation": "creative media and documentation",
 
     pdd: "public design and documentation",
-    "public design & documentation" : "public design and documentation",
+    "public design documentation": "public design and documentation",
 
-    "r&e": "research and education",
+    "r e": "research and education",
     "r and e": "research and education",
-    "research & education": "research and education",
+    "research education": "research and education",
 
-    "r&d": "research and development",
+    "r d": "research and development",
     "r and d": "research and development",
-    "research & development": "research and development",
+    "research development": "research and development",
   };
 
   return map[v] || v;
