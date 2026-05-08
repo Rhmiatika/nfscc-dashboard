@@ -117,6 +117,30 @@ function getDistanceFromToday(input) {
   return Math.abs(d.getTime() - today.getTime());
 }
 
+function normalizeDivisiName(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/\s+/g, " ");
+}
+
+function getDisplayDivisi(value) {
+  const v = normalizeDivisiName(value);
+
+  const map = {
+    "public relation": "PR",
+    "public relations": "PR",
+    "human resource development": "HRD",
+    "creative media and documentation": "CMD",
+    "research and education": "R&E",
+    "research and development": "R&D",
+    "public design and documentation": "PDD",
+  };
+
+  return map[v] || value || "-";
+}
+
 export default function DashboardPage({ state, setState, theme, ui }) {
   const isAdmin = !!state?.session?.isAdmin;
 
@@ -854,11 +878,11 @@ const activePeriodLabel =
                 </div>
 
                 <div className={cx("mt-1 text-sm", ui.textMuted)}>
-                  {p.divisi || "-"} • {p.tanggal || p.date || "-"}
+                  {p.divisiLabel || getDisplayDivisi(p.divisi)} • {p.tanggal || p.date || "-"}
                 </div>
 
                 <div className={cx("mt-3 grid grid-cols-1 gap-1 text-sm", ui.textMuted2)}>
-                  <div>PIC: {getMemberName(p.pic)}</div>
+                  <div>PIC: {p.picName || p.pic_name || getMemberName(p.pic)}</div>
                   <div>Status: {p.status || "-"}</div>
                   <div>
                     Anggaran: Rp{" "}
@@ -891,9 +915,11 @@ const activePeriodLabel =
                   <td className={cx(tdClass, "font-medium")}>
                     {p.title || p.nama || "-"}
                   </td>
-                  <td className={tdClass}>{p.divisi || "-"}</td>
+                  <td className={tdClass}>
+                    {p.divisiLabel || getDisplayDivisi(p.divisi)}
+                  </td>
                   <td className={tdClass}>{p.tanggal || p.date || "-"}</td>
-                  <td className={tdClass}>{getMemberName(p.pic)}</td>
+                  <td className={tdClass}>{p.picName || p.pic_name || getMemberName(p.pic)}</td>
                   <td className={tdClass}>{p.status || "-"}</td>
                   <td className={tdClass}>
                     Rp{" "}
