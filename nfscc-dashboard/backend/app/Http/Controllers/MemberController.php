@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class MemberController extends Controller
@@ -362,5 +363,45 @@ class MemberController extends Controller
         ]);
 
         return response()->json($this->transformMember($member->fresh()));
+    }
+
+    public function resetPassword(string $id): JsonResponse
+    {
+        $member = Member::findOrFail($id);
+
+        $email = $this->normalizeEmail($member->email);
+
+        if ($email === '') {
+            return response()->json([
+                'message' => 'Email/Login ID anggota kosong.'
+            ], 422);
+        }
+
+        $defaultPassword = 'nfscc123';
+        $hashedPassword = Hash::make($defaultPassword);
+
+        DB::transaction(function () use ($member, $email, $hashedPassword) {
+            $member->update([
+                'password' => $hashedPassword,
+            ]);
+
+            $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+            if (!$user) {
+                $user = new User();
+                $user->email = $email;
+            }
+
+            $user->name = $member->nama;
+            $user->role = $this->resolveRole($member->jabatan, (bool) $member->is_ec);
+            $user->periode = (string) $member->periode;
+            $user->password = $hashedPassword;
+            $user->save();
+        });
+
+        return response()->json([
+            'message' => 'Password berhasil direset.',
+            'default_password' => $defaultPassword,
+        ]);
     }
 }
