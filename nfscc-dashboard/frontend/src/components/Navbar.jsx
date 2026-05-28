@@ -335,8 +335,8 @@ export default function NavbarLayout({ state, setState, theme, ui, onToggleTheme
           <div className={headerCls}>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:gap-3">
-                <img src="/logo.png" alt="NFSCC" className="h-12 w-12 rounded-xl object-contain" />
-                <div className="text-xl font-semibold tracking-tight mt-2 md:mt-0">NFSCC HUB</div>
+                <img src="/logo2.png" alt="NFSCC" className="h-12 w-12 rounded-xl object-contain" />
+                <div className="text-xl font-semibold tracking-tight mt-2 md:mt-0">NFCC HUB</div>
               </div>
 
               <div className="flex w-full items-center justify-between gap-3 md:w-auto md:justify-end">

@@ -181,6 +181,9 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
 
   const isAllowedDivision = [
     "hrd",
+    "cmd",
+    "creative media & documentation",
+    "creative media and documentation",
     "r&d",
     "r&e",
     "research & development",
@@ -193,13 +196,25 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   const isAuthed = !!state?.session?.isAuthed;
 
   const canViewPage = true;
+
+  const isCMDUser =
+    normalizeDivisiName(myDivisi) === "creative media and documentation" ||
+    normalizeDivisiName(myDivisi) === "creative media & documentation" ||
+    normalizeDivisiName(myDivisi) === "cmd";
+
+  const isDokumentasiOnlyEdit = isCMDUser && !isAdmin;
   const canManagePage =
-    isAuthed && (isAdmin || isLeadOrVice || isEC || isAllowedDivision);
+    isAuthed && (isAdmin || isLeadOrVice || isEC || isCMDUser);
   const canClearPage =
-    isAuthed && (isAdmin || isEC || isAllowedDivision);
+    isAuthed && (isAdmin || isEC || isLeadOrVice);
 
   const canChooseDivisi = isAuthed && (isAdmin || isLeadOrVice);
   const canChoosePic = isAuthed && (isAdmin || isLeadOrVice || isEC);
+  const canEditDokumentasi =
+    isAdmin ||
+    normalizeDivisiName(myDivisi) === "creative media and documentation" ||
+    normalizeDivisiName(myDivisi) === "creative media & documentation" ||
+    normalizeDivisiName(myDivisi) === "cmd";
 
   const DIVISI_OPTIONS = [
     "Lead",
@@ -379,7 +394,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       note: String(note || "").trim(),
       status: autoStatus,
       proposalLink: String(proposalLink || "").trim(),
-      docLink: String(docLink || "").trim(),
+      docLink: canEditDokumentasi ? String(docLink || "").trim() : "",
       notulensiLink: String(notulensiLink || "").trim(),
       hiddenFromProkerPage: false,
       archived: false,
@@ -488,10 +503,12 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
 
   useEffect(() => {
     if (!editOpen) return;
+    if (isDokumentasiOnlyEdit) return;
+
     if (!canChooseDivisi) {
       setEDivisi(myDivisi || "Lead");
     }
-  }, [editOpen, canChooseDivisi, myDivisi]);
+  }, [editOpen, canChooseDivisi, myDivisi, isDokumentasiOnlyEdit]);
 
   useEffect(() => {
     if (!editOpen) return;
@@ -541,6 +558,29 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
     e.preventDefault();
     if (!canManagePage) return;
     if (!editingItem) return;
+    if (isDokumentasiOnlyEdit) {
+      const payload = {
+        ...editingItem,
+        docLink: String(eDocLink || "").trim(),
+      };
+
+      try {
+        const updated = await updateProkerApi(editingItem.id, payload, activePeriodId);
+
+        setState((prev) => ({
+          ...prev,
+          proker: (Array.isArray(prev.proker) ? prev.proker : []).map((item) =>
+            String(item.id) !== String(editingItem.id) ? item : updated
+          ),
+        }));
+
+        closeEdit();
+      } catch (err) {
+        alert(err.message || "Gagal mengubah dokumentasi.");
+      }
+
+      return;
+    }
 
     const finalTitle = String(eTitle || "").trim();
     const finalDivisi = String(eDivisi || "").trim();
@@ -568,7 +608,9 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       note: String(eNote || "").trim(),
       status: autoStatus,
       proposalLink: String(eProposalLink || "").trim(),
-      docLink: String(eDocLink || "").trim(),
+      docLink: canEditDokumentasi
+        ? String(eDocLink || "").trim()
+        : String(editingItem.docLink || "").trim(),
       notulensiLink: String(eNotulensiLink || "").trim(),
       archived: editingItem.archived ?? false,
       picName: selectedPicMember?.name || selectedPicMember?.nama || finalPic,
@@ -592,7 +634,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   }
 
   async function removeProkerFromPage(id) {
-    if (!canManagePage) return;
+    if (!canClearPage) return;
 
     const ok = confirm(
       "Hapus proker dari halaman? Data tetap tersimpan di Arsip."
@@ -634,7 +676,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
 
   return (
     <div className="space-y-6">
-      {canManagePage ? (
+      {canManagePage && !isDokumentasiOnlyEdit && (
         <div className={ui.card}>
           <h2 className={sectionHeadingClass}>Tambah Proker</h2>
 
@@ -747,6 +789,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                 />
               </div>
 
+            {canEditDokumentasi && (
               <div className="xl:col-span-6">
                 <label className={ui.label}>Link Dokumentasi (optional)</label>
                 <input
@@ -756,6 +799,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                   placeholder="Link Dokumentasi (Drive/Folder) - opsional"
                 />
               </div>
+            )}
 
               <div className="xl:col-span-6">
                 <label className={ui.label}>Link Catatan & Evaluasi (optional)</label>
@@ -776,7 +820,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
             </button>
           </form>
         </div>
-      ) : null}
+    )}
 
       <div className={ui.card}>
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -927,7 +971,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
           </div>
 
           {/* MOBILE */}
-          <div className="md:hidden space-y-3 mt-4">
+          <div className="md:hidden max-h-[430px] overflow-y-auto space-y-3 mt-4 pr-1">
             {loadingProker ? (
               <div className="text-sm text-gray-500">Memuat data proker...</div>
             ) : filteredList.length === 0 ? (
@@ -1116,6 +1160,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                   >
                     Edit
                   </button>
+                {canClearPage && (
                   <button
                     type="button"
                     className={`${ui.btnBase} ${ui.btnGhost}`}
@@ -1123,6 +1168,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                   >
                     Hapus dari Page
                   </button>
+                )}
                 </>
               ) : null}
 
@@ -1148,6 +1194,19 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       >
         <form onSubmit={saveEdit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+          {isDokumentasiOnlyEdit ? (
+            <div className="xl:col-span-12">
+              <label className={ui.label}>Link dokumentasi</label>
+              <input
+                className={ui.input}
+                value={eDocLink}
+                onChange={(e) => setEDocLink(e.target.value)}
+                placeholder="Link dokumentasi (Drive/Folder)"
+              />
+            </div>
+          ) : (
+            <>
+            
             <div className="xl:col-span-5">
               <label className={ui.label}>Nama proker *</label>
               <input
@@ -1256,11 +1315,14 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
             </div>
 
             <div className="xl:col-span-6">
-              <label className={ui.label}>Link dokumentasi (optional)</label>
+              <label className={ui.label}>Link dokumentasi (hanya CMD)</label>
               <input
                 className={ui.input}
                 value={eDocLink}
-                onChange={(e) => setEDocLink(e.target.value)}
+                onChange={(e) => {
+                  if (canEditDokumentasi) setEDocLink(e.target.value);
+                }}
+                disabled={!canEditDokumentasi}
                 placeholder="Link dokumentasi (Drive/Folder) - opsional"
               />
             </div>
@@ -1274,6 +1336,8 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                 placeholder="Link Catatan & Evaluasi (Docs/GDrive) - opsional"
               />
             </div>
+            </>
+          )}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-3">

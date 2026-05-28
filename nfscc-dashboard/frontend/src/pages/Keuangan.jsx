@@ -2059,7 +2059,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid max-h-[430px] grid-cols-1 gap-4 overflow-y-auto pr-1 md:max-h-none md:grid-cols-2 md:overflow-visible md:pr-0 xl:grid-cols-4">
           {kasCalendarItems.map((item) => (
             <div
               key={item.key}
@@ -2199,7 +2199,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
           </div>
 
           {/* MOBILE */}
-          <div className="md:hidden space-y-3">
+          <div className="md:hidden max-h-[430px] space-y-3 overflow-y-auto pr-1">
             {filteredKasRecap.map((member) => (
               <div key={member.loginId || member.name} className={ui.card}>
                 <div className="font-medium">{member.name}</div>
@@ -2433,7 +2433,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
         </div>
 
         {/* MOBILE */}
-        <div className="md:hidden space-y-3 mt-4">
+        <div className="md:hidden max-h-[430px] space-y-3 overflow-y-auto pr-1 mt-4">
           {filteredHistory.map((row) => (
             <div key={`${row.kind}-${row.id}`} className={ui.card}>
               <div className="flex justify-between items-center">

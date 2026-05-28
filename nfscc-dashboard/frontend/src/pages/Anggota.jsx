@@ -222,9 +222,9 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-gray-200 bg-white p-6">
+      <section className={ui.card}>
         <h1 className="text-2xl font-semibold">Manajemen Anggota</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className={cx("mt-1 text-sm", ui.textMuted)}>
           Periode aktif: <b>{activePeriod}</b>
         </p>
 
@@ -251,15 +251,28 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           />
 
           <select
-            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
+            className={cx(
+              ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
+              theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
+            )}
             value={form.position}
             onChange={(e) => onChange("position", e.target.value)}
           >
-            <option>Staff</option>
-            <option>Executive Committee</option>
-            <option>Vice Lead</option>
-            <option>Lead</option>
-            <option>Admin</option>
+            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
+              Staff
+            </option>
+            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
+              Executive Committee
+            </option>
+            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
+              Vice Lead
+            </option>
+            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
+              Lead
+            </option>
+            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
+              Admin
+            </option>
           </select>
 
           <input
@@ -270,21 +283,32 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           />
 
           <select
-            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
+            className={cx(
+              ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
+              theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
+            )}
             value={form.periodId}
             onChange={(e) => onChange("periodId", e.target.value)}
           >
             {periods.map((p) => (
-              <option key={p.id} value={String(p.id)}>
+              <option
+                key={p.id}
+                value={String(p.id)}
+                className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}
+              >
                 {p.label || `Periode ${p.id}`}
               </option>
             ))}
           </select>
 
-          <div className="md:col-span-2 flex gap-3">
+          <div className="md:col-span-2 flex flex-wrap gap-3">
             <button
               type="submit"
-              className="rounded-2xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white"
+              className={cx(
+                ui.btnBase,
+                ui.btnPrimary,
+                "px-5 py-3 text-sm font-semibold"
+              )}
             >
               {editingId ? "Update Anggota" : "Tambah Anggota"}
             </button>
@@ -292,7 +316,11 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
             <button
               type="button"
               onClick={resetForm}
-              className="rounded-2xl border border-gray-300 px-5 py-3 text-sm font-semibold"
+              className={cx(
+                ui.btnBase,
+                ui.btnGhost,
+                "px-5 py-3 text-sm font-semibold"
+              )}
             >
               Reset Form
             </button>
@@ -300,7 +328,11 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
             <button
               type="button"
               onClick={loadMembers}
-              className="rounded-2xl border border-gray-300 px-5 py-3 text-sm font-semibold"
+              className={cx(
+                ui.btnBase,
+                ui.btnGhost,
+                "px-5 py-3 text-sm font-semibold"
+              )}
             >
               Reload
             </button>
@@ -314,10 +346,10 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
         ) : null}
       </section>
 
-      <section className="rounded-3xl border border-gray-200 bg-white p-6">
+      <section className={ui.card}>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Daftar Anggota</h2>
-          <div className="text-sm text-gray-500">
+          <div className={cx("text-sm", ui.textMuted)}>
             {loading ? "Memuat..." : `${filteredMembers.length} anggota`}
           </div>
         </div>
@@ -327,7 +359,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           {/* DESKTOP TABLE */}
           <div className="hidden md:block overflow-x-auto">
           <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
+            <div className={cx("text-sm", ui.textMuted)}>
               Cari anggota
             </div>
 
@@ -381,7 +413,15 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           {/* MOBILE CARD */}
           <div className="md:hidden space-y-3">
             {filteredMembers.map((member) => (
-              <div key={member.id} className="border rounded-2xl p-4 space-y-2">
+              <div
+                key={member.id}
+                className={cx(
+                  "rounded-2xl border p-4 space-y-2",
+                  theme === "dark"
+                    ? "border-white/10 bg-white/[0.03]"
+                    : "border-gray-200 bg-white"
+                )}
+              >
                 <div className="flex items-center gap-3">
                   <img
                     src={member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`}
@@ -389,7 +429,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
                   />
                   <div>
                     <div className="font-semibold">{member.name}</div>
-                    <div className="text-xs text-gray-500">{member.loginId}</div>
+                    <div className={cx("text-xs", ui.textMuted)}>{member.loginId}</div>
                   </div>
                 </div>
 

@@ -422,8 +422,20 @@ export default function TemplateSuratPage({
     .trim()
     .toLowerCase();
   const isAdmin = !!state?.session?.isAdmin;
+  const myPosition = String(me?.jabatan || me?.position || "")
+    .trim()
+    .toLowerCase();
+
+  const isLeadOrVice =
+    myPosition === "lead" ||
+    myPosition === "vice lead" ||
+    myPosition === "vicelead";
+
   const canManageDocs =
-    isAdmin || myDivision === "treasurer" || myDivision === "secretary";
+    isAdmin ||
+    isLeadOrVice ||
+    myDivision === "treasurer" ||
+    myDivision === "secretary";
 
   const docs = Array.isArray(state?.templateSuratDocs)
     ? state.templateSuratDocs

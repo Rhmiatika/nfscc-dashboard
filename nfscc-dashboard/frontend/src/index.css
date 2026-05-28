@@ -63,3 +63,13 @@
 .no-native-calendar-icon::-webkit-inner-spin-button {
   opacity: 0;
 }
+
+.dark select option {
+  background-color: #0f172a;
+  color: white;
+}
+
+.light select option {
+  background-color: white;
+  color: #0f172a;
+}

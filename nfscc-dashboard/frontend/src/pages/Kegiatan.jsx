@@ -129,9 +129,16 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
     !!me?.isEC ||
     isAllowedDivision;
 
+  const isCMDUser =
+    myDivisi === "creative media & documentation" ||
+    myDivisi === "creative media and documentation" ||
+    myDivisi === "cmd";
+
+  const isDokumentasiOnlyEdit = isCMDUser && !isAdmin && !isEC;
+
   const canViewPage = true;
-  const canManagePage = isAuthed && isPrivilegedUser;
-  const canUseForm = canManagePage;
+  const canManagePage = isAuthed && (isPrivilegedUser || isCMDUser);
+  const canUseForm = canManagePage && !isDokumentasiOnlyEdit;
   const canClearPage = isAuthed && isPrivilegedUser;
 
   const activeMemberOptions = useMemo(() => {
@@ -212,7 +219,7 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
 
   const canEdit = (k) => {
     if (!k) return false;
-    return isAuthed && isPrivilegedUser;
+    return isAuthed && (isPrivilegedUser || isDokumentasiOnlyEdit);
   };
 
   const [title, setTitle] = useState("");
@@ -402,6 +409,31 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
       return;
     }
 
+    if (isDokumentasiOnlyEdit) {
+      const payload = {
+        ...active,
+        dokLink: String(editDok || "").trim(),
+      };
+
+      try {
+        const updated = await updateKegiatanApi(active.id, payload, activePeriodId);
+
+        setState((s) => ({
+          ...s,
+          kegiatans: (Array.isArray(s?.kegiatans) ? s.kegiatans : []).map((k) =>
+            String(k.id) !== String(active.id) ? k : updated
+          ),
+          kegiatan: undefined,
+        }));
+
+        closeAll();
+      } catch (err) {
+        setEditError(err.message || "Gagal mengubah dokumentasi.");
+      }
+
+      return;
+    }
+
     if (!isEditValid) {
       setEditError("Mohon isi minimal: Nama kegiatan dan Tanggal.");
       return;
@@ -443,6 +475,8 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
   };
 
   async function deleteKegiatan(id) {
+    if (!canClearPage) return;
+
     const ok = confirm(
       "Hapus kegiatan ini dari halaman Kegiatan? Data tetap tersimpan di Arsip."
     );
@@ -713,7 +747,7 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
         </div>
 
         {/* MOBILE CARD */}
-        <div className="md:hidden mt-4 space-y-3">
+        <div className="md:hidden mt-4 max-h-[430px] overflow-y-auto space-y-3 pr-1">
           {loadingKegiatan ? (
             <div className={cx("text-center py-6", ui.textMuted)}>
               Memuat data kegiatan...
@@ -873,6 +907,7 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
                     Edit
                   </button>
 
+                {canClearPage && (
                   <button
                     type="button"
                     className={cx(ui.btnBase, ui.btnGhost, "px-4 py-2")}
@@ -880,6 +915,7 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
                   >
                     Hapus
                   </button>
+                )}
                 </>
               ) : null}
 
@@ -925,6 +961,19 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
                 {editError}
               </div>
             ) : null}
+
+          {isDokumentasiOnlyEdit ? (
+            <div>
+              <label className={labelClass}>Link Dokumentasi</label>
+              <input
+                className={ui.input}
+                value={editDok}
+                onChange={(e) => setEditDok(e.target.value)}
+                placeholder="Link dokumentasi (Drive/Folder)"
+              />
+            </div>
+          ) : (
+            <>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
               <div>
@@ -999,6 +1048,8 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
                 />
               </div>
             </div>
+            </>
+          )}
 
             <div className="mt-5 flex justify-end gap-2">
               <button

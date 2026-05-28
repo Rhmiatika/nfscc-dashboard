@@ -277,7 +277,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
           sourceId: String(p?.id || ""),
           title,
           date: dateText,
-          location: divisi,
+          location: "",
           sortDate: toSortableDate(dateText),
           label: `[Proker] ${title}${dateText ? ` • ${dateText}` : divisi ? ` • ${divisi}` : ""}`,
         };
@@ -318,21 +318,32 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
     );
   }, [membersSorted, searchMember]);
 
-    const findExistingPresensiByAcaraValue = (value) => {
-    if (!value) return null;
+const findExistingPresensiByAcaraValue = (value) => {
+  if (!value) return null;
 
-    const picked = acaraOptions.find((o) => o.value === value);
-    if (!picked) return null;
+  const picked = acaraOptions.find((o) => o.value === value);
+  if (!picked) return null;
 
-    return presensiList.find((p) => {
+  return (
+    presensiList.find((p) => {
       const isInternal = String(p?.type || "").toLowerCase() === "internal";
+      if (!isInternal) return false;
 
       const sameSource =
-        String(p?.source_id || "") === String(picked.sourceId || "");
+        picked.sourceId &&
+        String(p?.source_id || p?.sourceId || "") === String(picked.sourceId);
 
-      return isInternal && sameSource;
-    }) || null;
-  };
+      const sameTitle =
+        String(p?.title || "").trim().toLowerCase() ===
+        String(picked.title || "").trim().toLowerCase();
+
+      const sameDate =
+        String(p?.date || "").trim() === String(picked.date || "").trim();
+
+      return sameSource || (sameTitle && sameDate);
+    }) || null
+  );
+};
 
   const [type, setType] = useState("Internal");
   const [acaraValue, setAcaraValue] = useState("");
@@ -774,6 +785,46 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
 
   const [tipeFilter, setTipeFilter] = useState("Semua");
   const [anggotaFilter, setAnggotaFilter] = useState("Semua");
+  const [divisiFilter, setDivisiFilter] = useState("Semua");
+
+  const selectClass = cx(
+    ui.input,
+    "!h-10 !py-0",
+    theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
+  );
+
+  const optionClass =
+    theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900";
+
+  const normalizeDivisi = (divisi, position) => {
+    const d = String(divisi || "").trim().toLowerCase();
+    const p = String(position || "").trim().toLowerCase();
+
+    if (d === "lead" || d === "vicelead" || d === "vice lead" || p === "lead" || p === "vice lead") {
+      return "LEAD";
+    }
+
+    if (d === "creative media & documentation" || d === "cmd") {
+      return "Creative Media & Documentation";
+    }
+
+    if (d === "human resource development" || d === "hrd") {
+      return "Human Resource Development";
+    }
+
+    if (d === "public relation" || d === "public relations" || d === "pr") {
+      return "Public Relation";
+    }
+
+    if (d === "research and education" || d === "r&e" || d === "rne") {
+      return "Research and Education";
+    }
+
+    if (d === "secretary") return "Secretary";
+    if (d === "treasurer") return "Treasurer";
+
+    return divisi || "-";
+  };
 
   const rekap = useMemo(() => {
     const counts = new Map();
@@ -803,7 +854,8 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
 
       return {
         name: m.name,
-        divisi: m.divisi,
+        divisi: normalizeDivisi(m.divisi, m.position),
+        position: m.position,
         loginId: m.loginId,
         internal: c.internal,
         eksternal: c.eksternal,
@@ -816,6 +868,9 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
     } else if (anggotaFilter === "Jarang Hadir") {
       rows = rows.filter((r) => r.total === 0);
     }
+    if (divisiFilter !== "Semua") {
+      rows = rows.filter((r) => r.divisi === divisiFilter);
+    }
 
     rows.sort(
       (a, b) =>
@@ -824,7 +879,7 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
     );
 
     return rows;
-  }, [members, presensiList, tipeFilter, anggotaFilter]);
+  }, [members, presensiList, tipeFilter, anggotaFilter, divisiFilter]);
 
   return (
     <div className="space-y-6">
@@ -883,9 +938,11 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                             filteredAcaraOptions.map((o) => (
                               <button
                                 key={o.value}
-                                type="button"
                                 className={cx(
-                                  "block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-black/5",
+                                  "block w-full rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                                  theme === "dark"
+                                    ? "hover:bg-white/10 hover:text-white"
+                                    : "hover:bg-gray-100",
                                   acaraValue === o.value
                                     ? theme === "dark"
                                       ? "bg-white/10"
@@ -932,7 +989,16 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                 <label className={cx("text-sm", ui.textMuted)}>Tipe</label>
                 <select
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
+                  onChange={(e) => {
+                    const nextType = e.target.value;
+                    setType(nextType);
+
+                    if (nextType === "Eksternal") {
+                      setAcaraValue("");
+                      setExternalTitle("");
+                      setLocation("");
+                    }
+                  }}
                   className={cx("mt-2", ui.input)}
                 >
                   <option value="Internal">Internal</option>
@@ -962,6 +1028,16 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              
+              <div className="md:col-span-2">
+                <input
+                  type="text"
+                  placeholder="Cari anggota..."
+                  value={searchMember}
+                  onChange={(e) => setSearchMember(e.target.value)}
+                  className={cx(ui.input)}
+                />
+              </div>
               <div className={softBoxClass}>
                 <div className="text-sm font-semibold">Hadir</div>
                 <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 max-h-[220px] overflow-y-auto pr-1">
@@ -1156,8 +1232,14 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
           </table>
         </div>
 
-        <div className="md:hidden space-y-3">
-          {list.map((p) => (
+        {/* MOBILE */}
+        <div className="md:hidden max-h-[430px] space-y-3 overflow-y-auto pr-1">
+          {list.length === 0 ? (
+            <div className={cx("rounded-2xl p-4 text-sm ring-1", theme === "dark" ? "ring-slate-800" : "ring-gray-200")}>
+              Belum ada presensi.
+            </div>
+          ) : (
+            list.map((p) => (
             <div key={p.id} className={cx("rounded-xl p-3 ring-1", theme === "dark" ? "ring-slate-800" : "ring-gray-200")}>
               
               <div className="font-semibold">{p.title}</div>
@@ -1182,7 +1264,8 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                 Lihat Detail
               </button>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </Card>
 
@@ -1196,7 +1279,13 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
               <select
                 value={tipeFilter}
                 onChange={(e) => setTipeFilter(e.target.value)}
-                className={cx(ui.input, "!h-10 !py-0")}
+                className={cx(
+                  ui.input,
+                  "!h-10 !py-0",
+                  theme === "dark"
+                    ? "bg-slate-900 text-white border-slate-700"
+                    : "bg-white text-black"
+                )}
               >
                 <option value="Semua">Semua</option>
                 <option value="Internal">Internal</option>
@@ -1219,6 +1308,32 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
           </div>
         }
       >
+        <div className="flex items-center gap-2">
+          <span className={cx("text-sm whitespace-nowrap", ui.textMuted)}>
+            Divisi:
+          </span>
+
+          <select
+            value={divisiFilter}
+            onChange={(e) => setDivisiFilter(e.target.value)}
+            className={cx(selectClass, "w-full md:w-72")}
+          >
+            <option value="Semua">Semua</option>
+            <option value="Creative Media & Documentation">
+              Creative Media & Documentation
+            </option>
+            <option value="Human Resource Development">
+              Human Resource Development
+            </option>
+            <option value="LEAD">LEAD</option>
+            <option value="Public Relation">Public Relation</option>
+            <option value="Research and Education">
+              Research and Education
+            </option>
+            <option value="Secretary">Secretary</option>
+            <option value="Treasurer">Treasurer</option>
+          </select>
+        </div>
         <div className={cx("mt-3 mb-3 text-sm", ui.textMuted2)}>
           Total anggota ditampilkan: {rekap.length}
         </div>
@@ -1434,7 +1549,10 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
                               key={o.value}
                               type="button"
                               className={cx(
-                                "block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-black/5",
+                                "block w-full rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                                theme === "dark"
+                                  ? "hover:bg-white/10 hover:text-white"
+                                  : "hover:bg-gray-100",
                                 eAcaraValue === o.value
                                   ? theme === "dark"
                                     ? "bg-white/10"
@@ -1504,6 +1622,16 @@ export default function PresensiPage({ state, setState, theme, ui, utils }) {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            
+            <div className="md:col-span-2">
+              <input
+                type="text"
+                placeholder="Cari anggota..."
+                value={searchMember}
+                onChange={(e) => setSearchMember(e.target.value)}
+                className={cx(ui.input)}
+              />
+            </div>
             <div className={softBoxClass}>
               <div className="text-sm font-semibold">Hadir</div>
               <div className="mt-3 grid grid-cols-1 gap-2">
