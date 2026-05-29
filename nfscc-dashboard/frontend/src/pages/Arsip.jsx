@@ -608,7 +608,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                         <div>Divisi: {item.divisi || "-"}</div>
                         <div>Posisi: {item.position || "-"}</div>
                         <div>Tahun Angkatan: {item.tahunAngkatan || "-"}</div>
-                        <div>Alasan: {item.archiveReason || "-"}</div>
+                        <div>{item.archiveReason || "-"}</div>
                       </>
                     ) : item.category === "kegiatan" ? (
                       <>

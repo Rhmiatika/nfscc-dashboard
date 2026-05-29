@@ -40,6 +40,12 @@ export async function archiveMembersByPeriodApi(periodId, payload = {}) {
   });
 }
 
+export async function deleteArchivedMembersByPeriodApi(periodId) {
+  return apiClient.delete(
+    `/members/archive-by-period/${encodeURIComponent(String(periodId))}`
+  );
+}
+
 export async function restoreMemberApi(id) {
   const data = await apiClient.post(`/members/${id}/restore`, {});
   return mapMemberApiToFrontend(data);

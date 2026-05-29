@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   archiveMembersByPeriodApi,
+  deleteArchivedMembersByPeriodApi,
 } from "../Services/memberService";
 import {
   createPeriod,
@@ -262,19 +263,28 @@ export default function PeriodePage({ state, setState, theme, ui }) {
       return;
     }
 
-    const ok = confirm(`Hapus periode ${pid}? Data periode ini akan hilang.`);
+    const ok = confirm(`Hapus periode ${pid}? Arsip anggota periode ini juga akan dihapus.`);
     if (!ok) return;
 
-    const success = deletePeriod(pid);
+    try {
+      await deleteArchivedMembersByPeriodApi(pid);
 
-    if (!success) {
-      alert(`Periode ${pid} gagal dihapus.`);
-      return;
+      const success = deletePeriod(pid);
+
+      if (!success) {
+        alert(`Periode ${pid} gagal dihapus.`);
+        return;
+      }
+
+      const fallback = getCurrentPeriodId();
+      applyLoadedPeriod(fallback);
+
+      const remainingIds = (getPeriods() || []).map((p) => String(p.id));
+      await syncPeriodsToBackend(remainingIds, fallback);
+    } catch (err) {
+      console.error("Gagal menghapus periode:", err);
+      alert(err?.message || `Gagal menghapus periode ${pid}.`);
     }
-
-    const fallback = getCurrentPeriodId();
-    applyLoadedPeriod(fallback);
-    await syncPeriodsToBackend([fallback], fallback);
   }
 
   return (

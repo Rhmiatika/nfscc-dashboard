@@ -351,6 +351,18 @@ class MemberController extends Controller
         ]);
     }
 
+    public function deleteArchiveByPeriod(string $periode): JsonResponse
+    {
+        $count = Member::where('periode', $periode)
+            ->where('archived', true)
+            ->delete();
+
+        return response()->json([
+            'message' => "Arsip anggota periode {$periode} berhasil dihapus",
+            'count' => $count,
+        ]);
+    }
+
     public function restore(string $id): JsonResponse
     {
         $member = Member::findOrFail($id);
