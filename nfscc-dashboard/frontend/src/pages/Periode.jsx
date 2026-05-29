@@ -171,10 +171,36 @@ export default function PeriodePage({ state, setState, theme, ui }) {
       return;
     }
 
+    const oldPeriods = getPeriods() || [];
+    const oldActiveId = String(
+      oldPeriods.find((p) => p.isActive)?.id ||
+        getCurrentPeriodId() ||
+        ""
+    );
+
+    if (oldActiveId && oldActiveId !== y) {
+      await archiveMembersByPeriodApi(oldActiveId, {
+        reason: "periode_dinonaktifkan",
+        archivedBy: state?.session?.loginId || "admin",
+      });
+    }
+
     createPeriod(y, d);
+
+    const allIds = Array.from(
+      new Set([...oldPeriods.map((p) => String(p.id)), y])
+    );
+
+    setPeriodEnabled(y, true);
+
+    for (const id of allIds) {
+      if (id !== y) setPeriodEnabled(id, false);
+    }
+
     setActivePeriodId(y);
     applyLoadedPeriod(y);
-    await syncPeriodsToBackend([y], y);
+
+    await syncPeriodsToBackend(allIds, y);
 
     setYear("");
     setDomain("");
