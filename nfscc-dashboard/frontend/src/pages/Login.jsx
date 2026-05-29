@@ -335,7 +335,7 @@ export default function LoginPage({
               />
               <div>
                 <div className="text-2xl font-semibold tracking-tight">
-                  Login NFSCC
+                  Login NFCC HUB
                 </div>
                 <div
                   className={cx(
