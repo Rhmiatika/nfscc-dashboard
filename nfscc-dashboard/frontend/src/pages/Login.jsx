@@ -329,7 +329,7 @@ export default function LoginPage({
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
               <img
-                src="/logo.png"
+                src="/logo2.png"
                 alt="logo"
                 className="h-11 w-11 rounded-2xl object-contain"
               />
