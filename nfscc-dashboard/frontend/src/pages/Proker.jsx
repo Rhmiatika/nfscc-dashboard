@@ -234,7 +234,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   const [date, setDate] = useState("");
   const [pic, setPic] = useState("");
   const [budget, setBudget] = useState("");
-  const [note, setNote] = useState("");
+  const [location, setLocation] = useState("");
   const [status, setStatus] = useState("Perencanaan");
   const [proposalLink, setProposalLink] = useState("");
   const [docLink, setDocLink] = useState("");
@@ -358,7 +358,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
     setDate("");
     setPic("");
     setBudget("");
-    setNote("");
+    setLocation("");
     setStatus("Perencanaan");
     setProposalLink("");
     setDocLink("");
@@ -391,7 +391,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       date: finalDate,
       pic: finalPic,
       budget: String(budget || "").trim(),
-      note: String(note || "").trim(),
+      location: String(location || "").trim(),
       status: autoStatus,
       proposalLink: String(proposalLink || "").trim(),
       docLink: canEditDokumentasi ? String(docLink || "").trim() : "",
@@ -459,7 +459,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   const [eDate, setEDate] = useState("");
   const [ePic, setEPic] = useState("");
   const [eBudget, setEBudget] = useState("");
-  const [eNote, setENote] = useState("");
+  const [eLocation, setELocation] = useState("");
   const [eStatus, setEStatus] = useState("Perencanaan");
   const [eProposalLink, setEProposalLink] = useState("");
   const [eDocLink, setEDocLink] = useState("");
@@ -478,11 +478,18 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   useEffect(() => {
     if (!editingItem) return;
     setETitle(String(editingItem.title || ""));
-    setEDivisi(String(editingItem.divisi || "Lead"));
+    const savedDivisi = String(editingItem.divisi || "").trim();
+
+    const matchedOption =
+      DIVISI_OPTIONS.find(
+        (d) => normalizeDivisiName(d) === normalizeDivisiName(savedDivisi)
+      ) || "";
+
+    setEDivisi(matchedOption);
     setEDate(String(editingItem.date || ""));
     setEPic(String(editingItem.pic || ""));
     setEBudget(String(editingItem.budget || ""));
-    setENote(String(editingItem.note || ""));
+    setELocation(String(editingItem.location || ""));
     setEStatus(String(editingItem.status || "Perencanaan"));
     setEProposalLink(String(editingItem.proposalLink || ""));
     setEDocLink(String(editingItem.docLink || ""));
@@ -527,6 +534,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
   }
 
   function openEdit(item) {
+  console.log("EDIT ITEM:", item);
     if (!canManagePage) return;
     setEditingId(item.id);
     setActive(item);
@@ -605,7 +613,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
       date: finalDate,
       pic: finalPic,
       budget: String(eBudget || "").trim(),
-      note: String(eNote || "").trim(),
+      location: String(eLocation || "").trim(),
       status: autoStatus,
       proposalLink: String(eProposalLink || "").trim(),
       docLink: canEditDokumentasi
@@ -692,8 +700,8 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                 />
               </div>
 
-              <div className="xl:col-span-3">
-                <label className={ui.label}>Divisi</label>
+              <div className="xl:col-span-2">
+                <label className={ui.label}>Divisi *</label>
                 <select
                   className={ui.select || ui.input}
                   value={divisi}
@@ -725,8 +733,8 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                 />
               </div>
 
-              <div className="xl:col-span-3">
-                <label className={ui.label}>PIC</label>
+              <div className="xl:col-span-4">
+                <label className={ui.label}>PIC *</label>
                 <select
                   className={ui.select || ui.input}
                   value={pic}
@@ -744,7 +752,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                 </select>
               </div>
 
-              <div className="xl:col-span-2">
+              <div className="xl:col-span-3">
                 <label className={ui.label}>Anggaran (Rp)</label>
                 <input
                   className={ui.input}
@@ -755,16 +763,16 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               </div>
 
               <div className="xl:col-span-5">
-                <label className={ui.label}>Catatan</label>
+                <label className={ui.label}>Lokasi</label>
                 <input
                   className={ui.input}
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Catatan"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Lokasi kegiatan"
                 />
               </div>
 
-              <div className="xl:col-span-3">
+              <div className="xl:col-span-4">
                 <label className={ui.label}>Status Proker *</label>
                 <select
                   className={ui.select || ui.input}
@@ -779,7 +787,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                 </select>
               </div>
 
-              <div className="xl:col-span-6">
+              <div className="xl:col-span-4">
                 <label className={ui.label}>Link Proposal (optional)</label>
                 <input
                   className={ui.input}
@@ -790,7 +798,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               </div>
 
             {canEditDokumentasi && (
-              <div className="xl:col-span-6">
+              <div className="xl:col-span-4">
                 <label className={ui.label}>Link Dokumentasi (optional)</label>
                 <input
                   className={ui.input}
@@ -801,7 +809,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               </div>
             )}
 
-              <div className="xl:col-span-6">
+              <div className="xl:col-span-4">
                 <label className={ui.label}>Link Catatan & Evaluasi (optional)</label>
                 <input
                   className={ui.input}
@@ -1145,7 +1153,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
 
             {active.note ? (
               <div>
-                <div className={ui.textMuted2}>Catatan</div>
+                <div className={ui.textMuted2}>Lokasi</div>
                 <div className="font-semibold">{active.note}</div>
               </div>
             ) : null}
@@ -1207,7 +1215,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
           ) : (
             <>
             
-            <div className="xl:col-span-5">
+            <div className="xl:col-span-4">
               <label className={ui.label}>Nama proker *</label>
               <input
                 className={ui.input}
@@ -1218,7 +1226,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
             </div>
 
             <div className="xl:col-span-2">
-              <label className={ui.label}>Divisi</label>
+              <label className={ui.label}>Divisi *</label>
               <select
                 className={ui.select || ui.input}
                 value={eDivisi}
@@ -1250,8 +1258,8 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               />
             </div>
 
-            <div className="xl:col-span-3">
-              <label className={ui.label}>PIC</label>
+            <div className="xl:col-span-4">
+              <label className={ui.label}>PIC *</label>
               <select
                 className={ui.select || ui.input}
                 value={ePic}
@@ -1280,16 +1288,16 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
             </div>
 
             <div className="xl:col-span-5">
-              <label className={ui.label}>Catatan</label>
+              <label className={ui.label}>Lokasi</label>
               <input
                 className={ui.input}
-                value={eNote}
-                onChange={(e) => setENote(e.target.value)}
-                placeholder="Catatan"
+                value={eLocation}
+                onChange={(e) => setELocation(e.target.value)}
+                placeholder="Lokasi kegiatan"
               />
             </div>
 
-            <div className="xl:col-span-3">
+            <div className="xl:col-span-2">
               <label className={ui.label}>Status Proker *</label>
               <select
                 className={ui.select || ui.input}
@@ -1304,7 +1312,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               </select>
             </div>
 
-            <div className="xl:col-span-6">
+            <div className="xl:col-span-4">
               <label className={ui.label}>Link proposal (optional)</label>
               <input
                 className={ui.input}
@@ -1314,7 +1322,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               />
             </div>
 
-            <div className="xl:col-span-6">
+            <div className="xl:col-span-4">
               <label className={ui.label}>Link dokumentasi (hanya CMD)</label>
               <input
                 className={ui.input}
@@ -1327,7 +1335,7 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               />
             </div>
 
-            <div className="xl:col-span-6">
+            <div className="xl:col-span-4">
               <label className={ui.label}>Link Catatan & Evaluasi (optional)</label>
               <input
                 className={ui.input}

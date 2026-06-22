@@ -255,8 +255,13 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
   }, [activePeriodId]);
 
   const isFormValid = useMemo(() => {
-    return Boolean(String(title || "").trim()) && Boolean(tanggal);
-  }, [title, tanggal]);
+    return (
+      Boolean(String(title || "").trim()) &&
+      Boolean(tanggal) &&
+      Boolean(String(lokasi || "").trim()) &&
+      Boolean(String(pic || "").trim())
+    );
+  }, [title, tanggal, lokasi, pic]);
 
   const disabledBtnClass = "opacity-50 cursor-not-allowed pointer-events-none";
 
@@ -323,7 +328,7 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
     setFormError("");
 
     if (!isFormValid) {
-      setFormError("Mohon isi minimal: Nama kegiatan dan Tanggal.");
+      setFormError("Mohon isi Nama Kegiatan, Tanggal, Lokasi, dan PIC.");
       return;
     }
 
@@ -566,7 +571,7 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
             </div>
 
             <div>
-              <label className={labelClass}>Lokasi</label>
+              <label className={labelClass}>Lokasi *</label>
               <input
                 className={ui.input}
                 value={lokasi}
@@ -576,7 +581,7 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
             </div>
 
             <div>
-              <label className={labelClass}>PIC</label>
+              <label className={labelClass}>PIC *</label>
               <select
                 className={cx(
                   ui.input,

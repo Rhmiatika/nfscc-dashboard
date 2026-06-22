@@ -4,18 +4,21 @@ import {
   listArchivedMembersApi,
   restoreMemberApi,
   deleteMemberApi,
+  updateMemberApi,
 } from "../Services/memberService";
 
 import {
   listArchivedKegiatanApi,
   restoreKegiatanApi,
   deleteKegiatanApi,
+  updateKegiatanApi,
 } from "../Services/kegiatanService";
 
 import {
   listArchivedProkerApi,
   restoreProkerApi,
   deleteProkerApi,
+  updateProkerApi,
 } from "../Services/prokerService";
 
 function cx(...arr) {
@@ -345,19 +348,66 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
   async function handleSaveEdit(form) {
     try {
-      console.log("UPDATE DATA:", editingItem.id, form);
+      if (!editingItem) return;
 
-      // ⚠️ nanti sambungkan ke API update masing-masing:
-      // updateKegiatanApi(...)
-      // updateProkerApi(...)
-      // updateMemberApi(...)
+      if (editingItem.category === "anggota") {
+        await updateMemberApi(editingItem.id, {
+          ...editingItem.raw,
+          name: form.title,
+          loginId: form.loginId,
+          divisi: form.divisi,
+          position: form.position,
+          tahunAngkatan: form.tahunAngkatan,
+          periodId: form.periodId,
+          archiveReason: form.archiveReason,
+        });
+      }
+
+      if (editingItem.category === "kegiatan") {
+        await updateKegiatanApi(
+          editingItem.id,
+          {
+            ...editingItem.raw,
+            title: form.title,
+            tanggal: form.tanggal,
+            lokasi: form.lokasi,
+            pic: form.pic,
+            dokLink: form.dokLink,
+            notulensiLink: form.notulensiLink,
+          },
+          editingItem.periodId
+        );
+      }
+
+      if (editingItem.category === "proker") {
+        await updateProkerApi(
+          editingItem.id,
+          {
+            ...editingItem.raw,
+            title: form.title,
+            divisi: form.divisi,
+            date: form.tanggal,
+            pic: form.pic,
+            budget: form.budget,
+            location: form.location,
+            status: form.status,
+            proposalLink: form.proposalLink,
+            docLink: form.docLink,
+            notulensiLink: form.notulensiLink,
+          },
+          editingItem.periodId
+        );
+      }
 
       setEditOpen(false);
       setEditingItem(null);
 
       await loadAllArchiveData();
+
+      alert("Data berhasil diperbarui.");
     } catch (err) {
-      alert("Gagal update data");
+      console.error(err);
+      alert(err.message || "Gagal update data");
     }
   }
 
@@ -390,12 +440,23 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           title: item.title || "",
           tanggal: item.tanggal || "",
           lokasi: item.lokasi || "",
+          location: item.raw?.location || "",
           divisi: item.divisi || "",
           status: item.status || "",
           pic: item.pic || "",
+
+          budget: item.raw?.budget || "",
+
+          proposalLink: item.raw?.proposalLink || "",
+          docLink: item.raw?.docLink || "",
+          notulensiLink: item.raw?.notulensiLink || "",
+
           loginId: item.loginId || "",
           position: item.position || "",
           tahunAngkatan: item.tahunAngkatan || "",
+
+          periodId: item.periodId || "",
+
           archiveReason: item.archiveReason || "",
         });
       }
@@ -409,6 +470,45 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
     function handleSubmit(e) {
       e.preventDefault();
+
+      if (item.category === "kegiatan") {
+        if (
+          !form.title?.trim() ||
+          !form.tanggal?.trim() ||
+          !form.lokasi?.trim() ||
+          !form.pic?.trim()
+        ) {
+          alert("Semua field bertanda * wajib diisi.");
+          return;
+        }
+      }
+
+      if (item.category === "proker") {
+        if (
+          !form.title?.trim() ||
+          !form.divisi?.trim() ||
+          !form.tanggal?.trim() ||
+          !form.pic?.trim() ||
+          !form.status?.trim()
+        ) {
+          alert("Semua field bertanda * wajib diisi.");
+          return;
+        }
+      }
+
+      if (item.category === "anggota") {
+        if (
+          !form.title?.trim() ||
+          !form.loginId?.trim() ||
+          !form.divisi?.trim() ||
+          !form.position?.trim() ||
+          !form.tahunAngkatan?.trim()
+        ) {
+          alert("Semua field wajib diisi.");
+          return;
+        }
+      }
+
       onSave(form);
     }
 
@@ -429,38 +529,246 @@ export default function ArsipPage({ state, setState, theme, ui }) {
             <div className="text-lg font-semibold">Edit Data</div>
 
             {/* FIELD DINAMIS */}
-            <input
-              className={ui.input}
-              value={form.title}
-              onChange={(e) => handleChange("title", e.target.value)}
-              placeholder="Judul"
-            />
 
             {item.category === "kegiatan" && (
               <>
-                <input className={ui.input} value={form.tanggal} onChange={(e)=>handleChange("tanggal", e.target.value)} placeholder="Tanggal"/>
-                <input className={ui.input} value={form.lokasi} onChange={(e)=>handleChange("lokasi", e.target.value)} placeholder="Lokasi"/>
-                <input className={ui.input} value={form.pic} onChange={(e)=>handleChange("pic", e.target.value)} placeholder="PIC"/>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+                  <div>
+                    <label className={ui.label}>Nama kegiatan *</label>
+                    <input
+                      className={ui.input}
+                      value={form.title || ""}
+                      onChange={(e) => handleChange("title", e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={ui.label}>Tanggal *</label>
+                    <input
+                      type="date"
+                      className={ui.input}
+                      value={form.tanggal || ""}
+                      onChange={(e) => handleChange("tanggal", e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={ui.label}>Lokasi *</label>
+                    <input
+                      className={ui.input}
+                      value={form.lokasi || ""}
+                      onChange={(e) => handleChange("lokasi", e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={ui.label}>PIC *</label>
+                    <input
+                      className={ui.input}
+                      value={form.pic || ""}
+                      onChange={(e) => handleChange("pic", e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div>
+                    <label className={ui.label}>Link Dokumentasi</label>
+                    <input
+                      className={ui.input}
+                      value={form.dokLink || ""}
+                      onChange={(e) => handleChange("dokLink", e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={ui.label}>Link Notulensi</label>
+                    <input
+                      className={ui.input}
+                      value={form.notulensiLink || ""}
+                      onChange={(e) => handleChange("notulensiLink", e.target.value)}
+                    />
+                  </div>
+                </div>
               </>
             )}
 
             {item.category === "proker" && (
-              <>
-                <input className={ui.input} value={form.tanggal} onChange={(e)=>handleChange("tanggal", e.target.value)} placeholder="Tanggal"/>
-                <input className={ui.input} value={form.divisi} onChange={(e)=>handleChange("divisi", e.target.value)} placeholder="Divisi"/>
-                <input className={ui.input} value={form.status} onChange={(e)=>handleChange("status", e.target.value)} placeholder="Status"/>
-                <input className={ui.input} value={form.pic} onChange={(e)=>handleChange("pic", e.target.value)} placeholder="PIC"/>
-              </>
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+
+                <div className="xl:col-span-4">
+                  <label className={ui.label}>Nama Proker *</label>
+                  <input
+                    className={ui.input}
+                    value={form.title || ""}
+                    onChange={(e) => handleChange("title", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-2">
+                  <label className={ui.label}>Divisi *</label>
+                  <input
+                    className={ui.input}
+                    value={form.divisi || ""}
+                    onChange={(e) => handleChange("divisi", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-2">
+                  <label className={ui.label}>Tanggal Event *</label>
+                  <input
+                    type="date"
+                    className={ui.input}
+                    value={form.tanggal || ""}
+                    onChange={(e) => handleChange("tanggal", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-4">
+                  <label className={ui.label}>PIC *</label>
+                  <input
+                    className={ui.input}
+                    value={form.pic || ""}
+                    onChange={(e) => handleChange("pic", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-3">
+                  <label className={ui.label}>Anggaran (Rp)</label>
+                  <input
+                    className={ui.input}
+                    value={form.budget || ""}
+                    onChange={(e) => handleChange("budget", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-5">
+                  <label className={ui.label}>Lokasi</label>
+                  <input
+                    className={ui.input}
+                    value={form.location || ""}
+                    onChange={(e) => handleChange("location", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-4">
+                  <label className={ui.label}>Status Proker *</label>
+                  <input
+                    className={ui.input}
+                    value={form.status || ""}
+                    onChange={(e) => handleChange("status", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-4">
+                  <label className={ui.label}>Link Proposal</label>
+                  <input
+                    className={ui.input}
+                    value={form.proposalLink || ""}
+                    onChange={(e) => handleChange("proposalLink", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-4">
+                  <label className={ui.label}>Link Dokumentasi</label>
+                  <input
+                    className={ui.input}
+                    value={form.docLink || ""}
+                    onChange={(e) => handleChange("docLink", e.target.value)}
+                  />
+                </div>
+
+                <div className="xl:col-span-4">
+                  <label className={ui.label}>Link Catatan & Evaluasi</label>
+                  <input
+                    className={ui.input}
+                    value={form.notulensiLink || ""}
+                    onChange={(e) => handleChange("notulensiLink", e.target.value)}
+                  />
+                </div>
+
+              </div>
             )}
 
             {item.category === "anggota" && (
-              <>
-                <input className={ui.input} value={form.loginId} onChange={(e)=>handleChange("loginId", e.target.value)} placeholder="Login ID"/>
-                <input className={ui.input} value={form.divisi} onChange={(e)=>handleChange("divisi", e.target.value)} placeholder="Divisi"/>
-                <input className={ui.input} value={form.position} onChange={(e)=>handleChange("position", e.target.value)} placeholder="Posisi"/>
-                <input className={ui.input} value={form.tahunAngkatan} onChange={(e)=>handleChange("tahunAngkatan", e.target.value)} placeholder="Tahun Angkatan"/>
-                <input className={ui.input} value={form.archiveReason} onChange={(e)=>handleChange("archiveReason", e.target.value)} placeholder="Alasan Arsip"/>
-              </>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                <div>
+                  <label className={ui.label}>Nama Lengkap *</label>
+                  <input
+                    className={ui.input}
+                    value={form.title || ""}
+                    onChange={(e) => handleChange("title", e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className={ui.label}>Login ID *</label>
+                  <input
+                    className={ui.input}
+                    value={form.loginId || ""}
+                    onChange={(e) => handleChange("loginId", e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className={ui.label}>Divisi *</label>
+                  <input
+                    className={ui.input}
+                    value={form.divisi || ""}
+                    onChange={(e) => handleChange("divisi", e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className={ui.label}>Jabatan *</label>
+                  <select
+                    className={ui.select || ui.input}
+                    value={form.position || ""}
+                    onChange={(e) => handleChange("position", e.target.value)}
+                  >
+                    <option value="Staff">Staff</option>
+                    <option value="Executive Committee">Executive Committee</option>
+                    <option value="Vice Lead">Vice Lead</option>
+                    <option value="Lead">Lead</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={ui.label}>Tahun Angkatan *</label>
+                  <input
+                    className={ui.input}
+                    value={form.tahunAngkatan || ""}
+                    onChange={(e) => handleChange("tahunAngkatan", e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className={ui.label}>Periode *</label>
+                  <select
+                    className={ui.select || ui.input}
+                    value={form.periodId || ""}
+                    onChange={(e) => handleChange("periodId", e.target.value)}
+                  >
+                    {getPeriods().map((p) => (
+                      <option key={p.id} value={String(p.id)}>
+                        {p.label || `Periode ${p.id}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={ui.label}>Alasan Arsip</label>
+                  <input
+                    className={ui.input}
+                    value={form.archiveReason || ""}
+                    onChange={(e) => handleChange("archiveReason", e.target.value)}
+                  />
+                </div>
+
+              </div>
             )}
 
             <div className="flex gap-2 pt-2">
