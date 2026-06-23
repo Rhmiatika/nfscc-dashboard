@@ -899,7 +899,7 @@ const findExistingPresensiByAcaraValue = (value) => {
           <form onSubmit={addPresensi} className="space-y-6">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
               <div className="md:col-span-2">
-                <label className={cx("text-sm", ui.textMuted)}>Nama Acara</label>
+                <label className={cx("text-sm", ui.textMuted)}>Nama Acara *</label>
 
                 {type === "Internal" ? (
                   <div className="mt-2 space-y-2 relative" ref={acaraDropdownRef}>
@@ -986,7 +986,7 @@ const findExistingPresensiByAcaraValue = (value) => {
               </div>
 
               <div>
-                <label className={cx("text-sm", ui.textMuted)}>Tipe</label>
+                <label className={cx("text-sm", ui.textMuted)}>Tipe *</label>
                 <select
                   value={type}
                   onChange={(e) => {
@@ -1007,7 +1007,7 @@ const findExistingPresensiByAcaraValue = (value) => {
               </div>
 
               <div>
-                <label className={cx("text-sm", ui.textMuted)}>Tanggal</label>
+                <label className={cx("text-sm", ui.textMuted)}>Tanggal *</label>
                 <input
                   type="date"
                   value={date}

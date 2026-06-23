@@ -139,6 +139,21 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
       periodId: form.periodId || activePeriod,
     };
 
+    const ok = window.confirm(
+      `${editingId ? "Update" : "Tambah"} anggota dengan data berikut?
+
+    Nama      : ${payload.name}
+    Login ID  : ${payload.loginId}
+    Divisi    : ${payload.divisi}
+    Jabatan   : ${payload.position}
+    Angkatan  : ${payload.tahunAngkatan || "-"}
+    Periode   : ${payload.periodId}
+
+    Apakah data sudah sesuai?`
+    );
+
+    if (!ok) return;
+
     try {
       if (editingId) {
         const updated = await updateMemberApi(editingId, payload);

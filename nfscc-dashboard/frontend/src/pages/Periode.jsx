@@ -172,6 +172,12 @@ export default function PeriodePage({ state, setState, theme, ui }) {
       return;
     }
 
+    const ok = window.confirm(
+      `Apakah data periode sudah sesuai?\n\nTahun: ${y}\nDomain: @${d}`
+    );
+
+    if (!ok) return;   
+
     const oldPeriods = getPeriods() || [];
     const oldActiveId = String(
       oldPeriods.find((p) => p.isActive)?.id ||
@@ -216,6 +222,12 @@ export default function PeriodePage({ state, setState, theme, ui }) {
   async function onTogglePeriod(p) {
     const pid = String(p?.id || "");
     if (!pid) return;
+
+    const ok = window.confirm(
+      `Aktifkan periode ${pid}?\n\nPeriode aktif saat ini akan dinonaktifkan dan anggota periode sebelumnya akan diarsipkan.`
+    );
+
+    if (!ok) return;
 
     const allPeriods = getPeriods() || [];
 
@@ -263,7 +275,9 @@ export default function PeriodePage({ state, setState, theme, ui }) {
       return;
     }
 
-    const ok = confirm(`Hapus periode ${pid}? Arsip anggota periode ini juga akan dihapus.`);
+    const ok = window.confirm(
+      `Apakah Anda yakin ingin menghapus periode ${pid}?\n\nSemua arsip anggota pada periode ini juga akan dihapus permanen.`
+    );
     if (!ok) return;
 
     try {

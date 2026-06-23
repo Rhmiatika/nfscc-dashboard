@@ -380,6 +380,19 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
     if (!finalDate) return alert("Tanggal wajib diisi.");
     if (!finalPic) return alert("PIC wajib dipilih.");
 
+    const konfirmasi = window.confirm(
+      `Apakah data proker sudah sesuai?
+
+    Nama Proker : ${finalTitle}
+    Divisi      : ${finalDivisi}
+    Tanggal     : ${finalDate}
+    Status      : ${autoStatus}
+
+    Klik OK untuk menyimpan data.`
+    );
+
+    if (!konfirmasi) return;
+
     const selectedPicMember = members.find(
       (m) => String(m.loginId || m.email) === finalPic
     );

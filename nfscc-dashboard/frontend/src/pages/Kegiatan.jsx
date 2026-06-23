@@ -344,6 +344,17 @@ export default function KegiatanPage({ state, setState, ui, utils, theme }) {
       hiddenFromKegiatanPage: false,
     };
 
+    const confirmSubmit = window.confirm(
+      `Apakah data kegiatan sudah sesuai?
+
+    Nama Kegiatan : ${payload.title}
+    Tanggal       : ${payload.tanggal}
+    Lokasi        : ${payload.lokasi}
+    PIC           : ${payload.pic}`
+    );
+
+    if (!confirmSubmit) return;
+
     try {
       const created = await createKegiatanApi(payload, activePeriodId);
 

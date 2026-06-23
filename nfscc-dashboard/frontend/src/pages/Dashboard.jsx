@@ -621,7 +621,7 @@ const activePeriodLabel =
           </div>
         }
       >
-        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr] items-stretch">
+        <div className="grid gap-4 lg:grid-cols-[2fr_1fr] items-stretch">
           <div>
             <div className={cx("mb-3 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase", ui.textMuted)}>
               {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => (

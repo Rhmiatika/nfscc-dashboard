@@ -447,6 +447,8 @@ export default function TemplateSuratPage({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [editingItem, setEditingItem] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDoc, setPendingDoc] = useState(null);
 
   const filteredDocs = useMemo(() => {
     const ql = String(q || "").trim().toLowerCase();
@@ -481,6 +483,16 @@ export default function TemplateSuratPage({
     setModalMode("edit");
     setModalOpen(true);
   }
+
+  async function confirmSaveDoc() {
+    if (!pendingDoc) return;
+
+    setConfirmOpen(false);
+
+    await handleSubmitDoc(pendingDoc);
+
+    setPendingDoc(null);
+  } 
 
   async function handleSubmitDoc({ title, url }) {
     const finalUrl = normalizeUrl(url);
@@ -706,6 +718,50 @@ export default function TemplateSuratPage({
       )}
     </div>
 
+    {confirmOpen && (
+      <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50">
+        <div
+          className={cx(
+            "w-full max-w-md rounded-2xl p-6",
+            theme === "dark"
+              ? "bg-slate-900 border border-white/10"
+              : "bg-white border border-gray-200"
+          )}
+        >
+          <h3 className="text-lg font-semibold">
+            {modalMode === "edit"
+              ? "Simpan Perubahan?"
+              : "Tambah Dokumen?"}
+          </h3>
+
+          <p className={cx("mt-2 text-sm", ui.textMuted)}>
+            {modalMode === "edit"
+              ? "Perubahan dokumen akan disimpan."
+              : "Dokumen baru akan ditambahkan."}
+          </p>
+
+          <div className="mt-5 flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setConfirmOpen(false);
+                setPendingDoc(null);
+              }}
+              className={cx(ui.btnBase, ui.btnGhost)}
+            >
+              Batal
+            </button>
+
+            <button
+              onClick={confirmSaveDoc}
+              className={cx(ui.btnBase, ui.btnPrimary)}
+            >
+              Ya, Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
       <DocModal
         open={modalOpen}
         mode={modalMode}
@@ -714,7 +770,10 @@ export default function TemplateSuratPage({
           setModalOpen(false);
           setEditingItem(null);
         }}
-        onSubmit={handleSubmitDoc}
+        onSubmit={(data) => {
+          setPendingDoc(data);
+          setConfirmOpen(true);
+        }}
         ui={ui}
         theme={theme}
       />

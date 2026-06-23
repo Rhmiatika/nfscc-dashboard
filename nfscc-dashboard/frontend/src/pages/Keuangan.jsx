@@ -303,7 +303,6 @@ function formatDownloadDate(value = new Date()) {
 
 export default function KeuanganPage({ state, setState, ui, theme }) {
   const FINANCE_SHEET_WEBHOOK = APP_CONFIG.financeSheetWebhook;
-  const FINANCE_SHEET_URL = APP_CONFIG.financeSheetUrl;
 
     function getActivePeriodId(source) {
       return String(
@@ -419,10 +418,6 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
   const nonKasProofInputRef = useRef(null);
 
   const selectClass = cx("mt-2", ui.select || ui.input);
-  const linkClass =
-    theme === "dark"
-      ? "text-blue-300 hover:text-blue-200 underline"
-      : "text-blue-600 hover:text-blue-700 underline";
   const tableHeadClass =
     theme === "dark"
       ? "border-b border-white/10 text-slate-300"
@@ -800,6 +795,12 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
       return setKasError("Periode kas tidak valid.");
     }
 
+    const confirmSubmit = window.confirm(
+      `Pastikan data sudah benar.\n\nTanggal: ${kasTanggal}\nNominal: ${formatRupiah(kasTotalBayar)}\n\nLanjut simpan?`
+    );
+
+    if (!confirmSubmit) return;
+
     const payload = {
       periodId: periodKey,
       tanggal: kasTanggal,
@@ -848,9 +849,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
   const [tTanggal, setTTanggal] = useState(() =>
     getDefaultDateByPeriod(periodKey)
   );
-  const [tDivisi, setTDivisi] = useState(
-    String(me?.divisi || me?.division || "Treasurer")
-  );
+  const [tDivisi, setTDivisi] = useState("");
   const [tTipe, setTTipe] = useState("Masuk");
   const [tKategori, setTKategori] = useState("");
   const [tNominal, setTNominal] = useState("");
@@ -861,15 +860,26 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
   const isNonKasFormValid =
     isFinanceManager &&
     !!tTanggal &&
+    !!tDivisi &&
     !!String(tKategori || "").trim() &&
-    (Number(String(tNominal || "").replace(/[^\d]/g, "")) || 0) > 0;  
+    (Number(String(tNominal || "").replace(/[^\d]/g, "")) || 0) > 0;
 
   async function addTransaksiNonKas(e) {
     e.preventDefault();
     setTError("");
 
     if (!isFinanceManager) return;
-    if (!tTanggal || !tKategori || !tNominal) return;
+
+    if (!tTanggal || !tDivisi || !tKategori || !tNominal) {
+      setTError("Semua field bertanda * wajib diisi.");
+      return;
+    }
+
+    const confirmSubmit = window.confirm(
+      `Pastikan data sudah benar.\n\nTanggal: ${kasTanggal}\nNominal: ${formatRupiah(kasTotalBayar)}\n\nLanjut simpan?`
+    );
+
+    if (!confirmSubmit) return;
 
     const payload = {
       periodId: periodKey,
@@ -899,8 +909,8 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
       });
 
       setTTanggal(getDefaultDateByPeriod(periodKey));
-      setTDivisi(String(me?.divisi || me?.division || "Treasurer"));
-      setTTipe("Masuk");
+      setTDivisi("");
+      setTTipe("");
       setTKategori("");
       setTNominal("");
       setTCatatan("");
@@ -1789,7 +1799,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
           <form onSubmit={addKasPayment} className="space-y-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <DateField
-                label="Tanggal bayar"
+                label="Tanggal Bayar *"
                 type="date"
                 value={kasTanggal}
                 onChange={(e) => setKasTanggal(e.target.value)}
@@ -1799,7 +1809,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
 
               <div>
                 <label className={cx("mb-1 block text-sm", ui.textMuted)}>
-                  Anggota
+                  Anggota *
                 </label>
 
                 {isFinanceManager ? (
@@ -1847,7 +1857,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <DateField
-                label="Periode mulai"
+                label="Periode Mulai *"
                 type="month"
                 value={kasStartMonth}
                 onChange={(e) => setKasStartMonth(e.target.value)}
@@ -1856,7 +1866,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
               />
 
               <DateField
-                label="Periode sampai"
+                label="Periode Sampai *"
                 type="month"
                 value={kasEndMonth}
                 onChange={(e) => setKasEndMonth(e.target.value)}
@@ -1868,7 +1878,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
             <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-2">
               <div>
                 <label className={cx("mb-1 block text-sm", ui.textMuted)}>
-                  Nominal (Rp)
+                  Nominal (Rp) *
                 </label>
                 <input
                   className={cx("mt-2", ui.input)}
@@ -1938,7 +1948,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
           <form onSubmit={addTransaksiNonKas} className="space-y-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
               <DateField
-                label="Tanggal"
+                label="Tanggal *"
                 type="date"
                 value={tTanggal}
                 onChange={(e) => setTTanggal(e.target.value)}
@@ -1948,24 +1958,34 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
 
               <div>
                 <label className={cx("mb-1 block text-sm", ui.textMuted)}>
-                  Divisi
+                  Divisi *
                 </label>
-                <input
-                  className={cx("mt-2", ui.input)}
+
+                <select
+                  className={selectClass}
                   value={tDivisi}
                   onChange={(e) => setTDivisi(e.target.value)}
-                />
+                >
+                  <option value="">Pilih Divisi</option>
+
+                  {divisiOptions.map((divisi) => (
+                    <option key={divisi} value={divisi}>
+                      {divisi}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label className={cx("mb-1 block text-sm", ui.textMuted)}>
-                  Tipe
+                  Tipe *
                 </label>
                 <select
                   className={selectClass}
                   value={tTipe}
                   onChange={(e) => setTTipe(e.target.value)}
                 >
+                  <option value="">Pilih Tipe</option>
                   <option value="Masuk">Masuk</option>
                   <option value="Keluar">Keluar</option>
                 </select>
@@ -1973,7 +1993,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
 
               <div>
                 <label className={cx("mb-1 block text-sm", ui.textMuted)}>
-                  Nominal
+                  Nominal *
                 </label>
                 <input
                   className={cx("mt-2", ui.input)}
@@ -1987,7 +2007,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
 
             <div>
               <label className={cx("mb-1 block text-sm", ui.textMuted)}>
-                Kategori
+                Kategori *
               </label>
               <input
                 className={cx("mt-2", ui.input)}
@@ -2316,29 +2336,7 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
                 ) : (
                   filteredHistory.map((row) => (
                     <tr key={`${row.kind}-${row.id}`} className={tableRowClass}>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <a
-                          className={linkClass}
-                          href={
-                            FINANCE_SHEET_URL && !FINANCE_SHEET_URL.includes("PASTE_URL")
-                              ? FINANCE_SHEET_URL
-                              : "#"
-                          }
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => {
-                            if (
-                              !FINANCE_SHEET_URL ||
-                              FINANCE_SHEET_URL.includes("PASTE_URL")
-                            ) {
-                              e.preventDefault();
-                              alert("URL spreadsheet keuangan belum diisi di config.");
-                            }
-                          }}
-                        >
-                          {row.label}
-                        </a>
-                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap">{row.label}</td>
                       <td className="py-3 px-4 whitespace-nowrap">{row.tanggal || "-"}</td>
                       <td className="py-3 px-4 whitespace-nowrap">{row.pihak || "-"}</td>
                       <td className="py-3 px-4 whitespace-nowrap">{row.divisi || "-"}</td>

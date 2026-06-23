@@ -99,6 +99,8 @@ export default function ArsipPage({ state, setState, theme, ui }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [confirmEditOpen, setConfirmEditOpen] = useState(false);
+  const [pendingEditForm, setPendingEditForm] = useState(null);
   const isAuthed = !!state?.session?.isAuthed;
 
   const role = String(state?.session?.role || "").toLowerCase();
@@ -431,6 +433,16 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     }
   }
 
+  async function confirmSaveEdit() {
+    if (!pendingEditForm) return;
+
+    setConfirmEditOpen(false);
+
+    await handleSaveEdit(pendingEditForm);
+
+    setPendingEditForm(null);
+  }
+
   function EditModal({ open, item, onClose, onSave, ui, theme }) {
     const [form, setForm] = useState({});
 
@@ -509,7 +521,8 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         }
       }
 
-      onSave(form);
+      setPendingEditForm(form);
+      setConfirmEditOpen(true);
     }
 
     return (
@@ -1033,6 +1046,46 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         </div>
       ) : null}
     </div>
+
+    {confirmEditOpen && (
+      <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50">
+        <div
+          className={cx(
+            "w-full max-w-md rounded-2xl p-6",
+            theme === "dark"
+              ? "bg-slate-900 border border-white/10"
+              : "bg-white border border-gray-200"
+          )}
+        >
+          <h3 className="text-lg font-semibold">
+            Simpan Perubahan?
+          </h3>
+
+          <p className={cx("mt-2 text-sm", ui.textMuted)}>
+            Data arsip yang diedit akan diperbarui.
+          </p>
+
+          <div className="mt-5 flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setConfirmEditOpen(false);
+                setPendingEditForm(null);
+              }}
+              className={cx(ui.btnBase, ui.btnGhost)}
+            >
+              Batal
+            </button>
+
+            <button
+              onClick={confirmSaveEdit}
+              className={cx(ui.btnBase, ui.btnPrimary)}
+            >
+              Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     <EditModal
       open={editOpen}
