@@ -498,7 +498,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           budget: item.raw?.budget || "",
 
           proposalLink: item.raw?.proposalLink || "",
-          docLink: item.raw?.docLink || "",
+          dokLink: item.raw?.dokLink || "",
           notulensiLink: item.raw?.notulensiLink || "",
 
           loginId: item.loginId || "",
