@@ -34,6 +34,11 @@ function getPicDisplayName(loginId, memberMap) {
   return memberMap.get(key) || loginId || "-";
 }
 
+const DIVISI_ALIASES = {
+  "r&e": "research and education",
+  "research and education": "research and education",
+};
+
 function normalizeDivisiName(value) {
   const v = String(value || "").trim().toLowerCase();
   return DIVISI_ALIASES[v] || v;
@@ -52,15 +57,15 @@ function normalizeDivisiForSelect(value) {
   return value;
 }
 
-  const DIVISI_OPTIONS = [
-    "Lead",
-    "PR",
-    "HRD",
-    "CMD",
-    "R&E",
-    "Secretary",
-    "Treasurer",
-  ];
+const DIVISI_OPTIONS = [
+  "Lead",
+  "PR",
+  "HRD",
+  "CMD",
+  "R&E",
+  "Secretary",
+  "Treasurer",
+];
 
 function FolderTile({ active, label, count, onClick, theme }) {
   return (
