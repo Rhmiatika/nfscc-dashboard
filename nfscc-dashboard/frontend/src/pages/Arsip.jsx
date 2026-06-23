@@ -656,9 +656,24 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                     >
                       <option value="">Pilih PIC</option>
 
-                      {(state?.members || []).map((member) => (
+                      {form.pic &&
+                      ![...(state?.members || []), ...(archivedMembers || [])]
+                        .some((m) => m.loginId === form.pic) && (
+                        <option value={form.pic}>
+                          {getPicName(form.pic)}
+                        </option>
+                      )}
+                      
+                    {[...(state?.members || []), ...(archivedMembers || [])]
+                      .filter(
+                        (m, i, arr) =>
+                          arr.findIndex(
+                            (x) => x.loginId === m.loginId
+                          ) === i
+                      )
+                      .map((member) => (
                         <option
-                          key={member.id}
+                          key={member.id || member.loginId}
                           value={member.loginId}
                         >
                           {member.name}
