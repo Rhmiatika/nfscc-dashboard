@@ -29,6 +29,21 @@ function normalizeUrl(url) {
   return String(url || "").trim();
 }
 
+function normalizeDivisiName(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+const DIVISI_OPTIONS = [
+  "Lead",
+  "PR",
+  "HRD",
+    ...(is2026Plus ? ["CMD", "R&E"] : ["PDD", "R&D"]),
+  "Secretary",
+  "Treasurer",
+];
+
 function FolderTile({ active, label, count, onClick, theme }) {
   return (
     <button
@@ -443,8 +458,30 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     setPendingEditForm(null);
   }
 
-  function EditModal({ open, item, onClose, onSave, ui, theme }) {
+  function EditModal({
+    open,
+    item,
+    onClose,
+    onSave,
+    ui,
+    theme,
+    state,
+  }) {
     const [form, setForm] = useState({});
+    const picOptions = useMemo(() => {
+      const selectedDiv = normalizeDivisiName(form.divisi);
+
+      return (state?.members || [])
+        .filter(
+          (m) =>
+            normalizeDivisiName(m?.divisi) === selectedDiv
+        )
+        .sort((a, b) =>
+          String(a?.name || "").localeCompare(
+            String(b?.name || "")
+          )
+        );
+    }, [state?.members, form.divisi]);
 
     useEffect(() => {
       if (item) {
@@ -576,11 +613,22 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
                   <div>
                     <label className={ui.label}>PIC *</label>
-                    <input
-                      className={ui.input}
+                    <select
+                      className={ui.select || ui.input}
                       value={form.pic || ""}
                       onChange={(e) => handleChange("pic", e.target.value)}
-                    />
+                    >
+                      <option value="">Pilih PIC</option>
+
+                      {(state?.members || []).map((member) => (
+                        <option
+                          key={member.id}
+                          value={member.loginId}
+                        >
+                          {member.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -620,11 +668,17 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
                 <div className="xl:col-span-2">
                   <label className={ui.label}>Divisi *</label>
-                  <input
-                    className={ui.input}
+                  <select
+                    className={ui.select || ui.input}
                     value={form.divisi || ""}
                     onChange={(e) => handleChange("divisi", e.target.value)}
-                  />
+                  >
+                    {DIVISI_OPTIONS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="xl:col-span-2">
@@ -639,11 +693,25 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
                 <div className="xl:col-span-4">
                   <label className={ui.label}>PIC *</label>
-                  <input
-                    className={ui.input}
+
+                  <select
+                    className={ui.select || ui.input}
                     value={form.pic || ""}
                     onChange={(e) => handleChange("pic", e.target.value)}
-                  />
+                  >
+                    {picOptions.length === 0 ? (
+                      <option value="">Belum ada anggota</option>
+                    ) : (
+                      picOptions.map((m) => (
+                        <option
+                          key={m.loginId}
+                          value={m.loginId}
+                        >
+                          {m.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
 
                 <div className="xl:col-span-3">
@@ -726,11 +794,18 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
                 <div>
                   <label className={ui.label}>Divisi *</label>
-                  <input
-                    className={ui.input}
+
+                  <select
+                    className={ui.select || ui.input}
                     value={form.divisi || ""}
                     onChange={(e) => handleChange("divisi", e.target.value)}
-                  />
+                  >
+                    {DIVISI_OPTIONS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -1097,6 +1172,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
       onSave={handleSaveEdit}
       ui={ui}
       theme={theme}
+      state={state}
     />
   </>
   );
