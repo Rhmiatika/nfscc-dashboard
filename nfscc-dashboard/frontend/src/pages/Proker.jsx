@@ -905,9 +905,9 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                     <tr key={item.id} className={tableRowClass}>
                       <td className={tdClass}>
                         <div className={titleClass}>{item.title}</div>
-                        {item.note ? (
+                        {item.location ? (
                           <div className={cx("mt-1", ui.helperText)}>
-                            {item.note}
+                            {item.location}
                           </div>
                         ) : null}
                       </td>
@@ -1024,8 +1024,8 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
                         : "-"}
                     </div>
 
-                    {item.note && (
-                      <div className="text-xs text-gray-500">{item.note}</div>
+                    {item.location && (
+                      <div className="text-xs text-gray-500">{item.location}</div>
                     )}
                   </div>
 
@@ -1090,6 +1090,11 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               <div>
                 <div className={ui.textMuted2}>Tanggal Event</div>
                 <div className="font-semibold">{active.date || "-"}</div>
+              </div>
+
+              <div>
+                <div className={ui.textMuted2}>Lokasi</div>
+                <div className="font-semibold">{active.location || "-"}</div>
               </div>
 
               <div>
