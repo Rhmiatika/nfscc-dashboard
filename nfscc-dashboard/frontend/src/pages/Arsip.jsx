@@ -29,10 +29,27 @@ function normalizeUrl(url) {
   return String(url || "").trim();
 }
 
+function getPicDisplayName(loginId, memberMap) {
+  const key = String(loginId || "").toLowerCase();
+  return memberMap.get(key) || loginId || "-";
+}
+
 function normalizeDivisiName(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase();
+  const v = String(value || "").trim().toLowerCase();
+  return DIVISI_ALIASES[v] || v;
+}
+
+function normalizeDivisiForSelect(value) {
+  const v = String(value || "").trim().toLowerCase();
+
+  if (
+    v === "research and education" ||
+    v === "r&e"
+  ) {
+    return "R&E";
+  }
+
+  return value;
 }
 
   const DIVISI_OPTIONS = [
@@ -259,7 +276,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
       tanggal: p.date || "",
       divisi: p.divisi || "",
       status: p.status || "",
-      pic: getPicName(p.pic),
+      pic: p.pic || "",
       hidden: !!p.hiddenFromProkerPage,
       raw: p,
       links: [
@@ -373,7 +390,11 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           ...editingItem.raw,
           name: form.title,
           loginId: form.loginId,
-          divisi: form.divisi,
+          divisi:
+            normalizeDivisiName(form.divisi) ===
+            "research and education"
+              ? "R&E"
+              : form.divisi,
           position: form.position,
           tahunAngkatan: form.tahunAngkatan,
           periodId: form.periodId,
@@ -403,7 +424,11 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           {
             ...editingItem.raw,
             title: form.title,
-            divisi: form.divisi,
+            divisi:
+              normalizeDivisiName(form.divisi) ===
+              "research and education"
+                ? "R&E"
+                : form.divisi,
             date: form.tanggal,
             pic: form.pic,
             budget: form.budget,
@@ -472,7 +497,12 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     const picOptions = useMemo(() => {
       const selectedDiv = normalizeDivisiName(form.divisi);
 
-      return (state?.members || [])
+      const allMembers = [
+        ...(state?.members || []),
+        ...(archivedMembers || []),
+      ];
+
+      return allMembers
         .filter(
           (m) =>
             normalizeDivisiName(m?.divisi) === selectedDiv
@@ -482,7 +512,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
             String(b?.name || "")
           )
         );
-    }, [state?.members, form.divisi]);
+    }, [state?.members, archivedMembers, form.divisi]);
 
     useEffect(() => {
       if (item) {
@@ -491,9 +521,9 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           tanggal: item.tanggal || "",
           lokasi: item.lokasi || "",
           location: item.raw?.location || "",
-          divisi: item.divisi || "",
+          divisi: normalizeDivisiForSelect(item.divisi),
           status: item.status || "",
-          pic: item.pic || "",
+          pic: item.raw?.pic || item.pic || "",
 
           budget: item.raw?.budget || "",
 
@@ -1011,7 +1041,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                       <>
                         <div>Tanggal: {item.tanggal || "-"}</div>
                         <div>Lokasi: {item.lokasi || "-"}</div>
-                        <div>PIC: {item.pic || "-"}</div>
+                        <div>PIC: {getPicDisplayName(item.pic, memberNameByLoginId)}</div>
                         <div>
                           Status halaman: {item.hidden ? "Masuk arsip saja" : "Masih tampil di halaman"}
                         </div>
@@ -1021,7 +1051,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                         <div>Tanggal: {item.tanggal || "-"}</div>
                         <div>Divisi: {item.divisi || "-"}</div>
                         <div>Status: {item.status || "-"}</div>
-                        <div>PIC: {item.pic || "-"}</div>
+                        <div>PIC: {getPicDisplayName(item.pic, memberNameByLoginId)}</div>
                         <div>
                           Status halaman: {item.hidden ? "Masuk arsip saja" : "Masih tampil di halaman"}
                         </div>
