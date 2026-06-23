@@ -38,12 +38,11 @@ function mapProkerFrontendToApi(item, periodId) {
   return {
     nama: item.title || "",
     divisi: item.divisi || "",
-    deskripsi: item.note || "",
+    deskripsi: item.location || item.note || "",
     tanggal_mulai: item.date || "",
     tanggal_selesai: item.endDate || null,
     pic: item.pic || "",
     anggaran: item.budget || "",
-    lokasi: item.location || "",
     status: item.status || "Perencanaan",
     proposal_link: item.proposalLink || "",
     doc_link: item.docLink || "",
