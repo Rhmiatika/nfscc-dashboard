@@ -418,6 +418,12 @@ export default function KeuanganPage({ state, setState, ui, theme }) {
   const nonKasProofInputRef = useRef(null);
 
   const selectClass = cx("mt-2", ui.select || ui.input);
+  const linkClass = cx(
+    "inline-flex items-center rounded-lg px-2 py-1 text-xs font-medium",
+    theme === "dark"
+      ? "text-sky-300 hover:text-sky-200"
+      : "text-blue-600 hover:text-blue-700"
+  );
   const tableHeadClass =
     theme === "dark"
       ? "border-b border-white/10 text-slate-300"
