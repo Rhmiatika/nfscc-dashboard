@@ -35,13 +35,12 @@ function normalizeDivisiName(value) {
     .toLowerCase();
 }
 
-  const is2026Plus = Number(activePeriodId) >= 2026;
-
   const DIVISI_OPTIONS = [
     "Lead",
     "PR",
     "HRD",
-    ...(is2026Plus ? ["CMD", "R&E"] : ["PDD", "R&D"]),
+    "CMD",
+    "R&E",
     "Secretary",
     "Treasurer",
   ];
