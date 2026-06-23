@@ -10,7 +10,12 @@ function mapProkerApiToFrontend(item) {
     endDate: item.endDate ?? item.tanggal_selesai ?? "",
     pic: item.pic ?? "",
     budget: item.budget ?? item.anggaran ?? "",
-    location: item.location ?? item.lokasi ?? "",
+    location:
+      item.location ??
+      item.lokasi ??
+      item.note ??
+      item.deskripsi ??
+      "",
     note: item.note ?? item.deskripsi ?? "",
     status: item.status ?? "Perencanaan",
     proposalLink: item.proposalLink ?? item.proposal_link ?? "",
