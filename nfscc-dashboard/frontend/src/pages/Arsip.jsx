@@ -533,7 +533,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           <form
             onSubmit={handleSubmit}
             className={cx(
-              "w-full max-w-lg rounded-2xl border p-5 space-y-3",
+             "w-full max-w-4xl max-h-[85vh] overflow-y-auto rounded-2xl border p-8 space-y-5",
               theme === "dark"
                 ? "bg-slate-900 border-white/10"
                 : "bg-white border-gray-200"
