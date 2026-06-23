@@ -35,14 +35,16 @@ function normalizeDivisiName(value) {
     .toLowerCase();
 }
 
-const DIVISI_OPTIONS = [
-  "Lead",
-  "PR",
-  "HRD",
+  const is2026Plus = Number(activePeriodId) >= 2026;
+
+  const DIVISI_OPTIONS = [
+    "Lead",
+    "PR",
+    "HRD",
     ...(is2026Plus ? ["CMD", "R&E"] : ["PDD", "R&D"]),
-  "Secretary",
-  "Treasurer",
-];
+    "Secretary",
+    "Treasurer",
+  ];
 
 function FolderTile({ active, label, count, onClick, theme }) {
   return (
