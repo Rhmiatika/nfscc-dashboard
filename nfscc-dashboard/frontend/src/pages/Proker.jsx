@@ -1164,10 +1164,10 @@ export default function ProkerPage({ state, setState, theme, ui, utils }) {
               </div>
             </div>
 
-            {active.note ? (
+            {active.location ? (
               <div>
                 <div className={ui.textMuted2}>Lokasi</div>
-                <div className="font-semibold">{active.note}</div>
+                <div className="font-semibold">{active.location || "-"}</div>
               </div>
             ) : null}
 
