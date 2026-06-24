@@ -192,6 +192,11 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     e.preventDefault();
     setError("");
 
+    if (loading) {
+      setError("Tunggu sampai data anggota selesai dimuat.");
+      return;
+    }
+
     if (!form.name.trim()) return setError("Nama wajib diisi.");
     if (!form.loginId.trim()) return setError("Login ID wajib diisi.");
     if (!form.divisi.trim()) return setError("Divisi wajib diisi.");
@@ -204,11 +209,13 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     }
 
     if (form.position === "Executive Committee") {
-      const existingEC = members.find(
+
+      const latestMembers = await listMembersApi(form.periodId);
+
+      const existingEC = latestMembers.find(
         (m) =>
           !m.archived &&
           m.id !== editingId &&
-          String(m.periodId) === String(form.periodId) &&
           String(m.divisi).toLowerCase() ===
             String(form.divisi).toLowerCase() &&
           isExecutiveCommittee(m)
@@ -441,13 +448,19 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           <div className="md:col-span-2 flex flex-wrap gap-3">
             <button
               type="submit"
+              disabled={loading}
               className={cx(
                 ui.btnBase,
                 ui.btnPrimary,
-                "px-5 py-3 text-sm font-semibold"
+                "px-5 py-3 text-sm font-semibold",
+                loading && "opacity-50 cursor-not-allowed"
               )}
             >
-              {editingId ? "Update Anggota" : "Tambah Anggota"}
+              {loading
+                ? "Memuat Data..."
+                : editingId
+                ? "Update Anggota"
+                : "Tambah Anggota"}
             </button>
 
             <button
