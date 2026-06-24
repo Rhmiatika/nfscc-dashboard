@@ -176,15 +176,21 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
   }
 
   function isExecutiveCommittee(member) {
-    const pos = String(member?.position || "")
+    const pos = String(
+      member?.position ||
+      member?.jabatan ||
+      ""
+    )
       .trim()
       .toLowerCase();
 
     return (
-      pos === "executive committee" ||
+      pos.includes("executive") ||
+      pos === "ec" ||
       pos === "lead" ||
       pos === "vice lead" ||
-      member?.isEC === true
+      member?.isEC === true ||
+      member?.is_ec === true
     );
   }
 
@@ -238,6 +244,14 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     };
 
     if (payload.isEC) {
+      console.log(
+        "DATA MEMBER DIVISI",
+        members.filter(
+          m =>
+            String(m.divisi).toLowerCase() ===
+            String(form.divisi).toLowerCase()
+        )
+      );
       const existingEC = members.find((m) => {
         if (editingId && m.id === editingId) return false;
 
@@ -259,6 +273,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     }
 
     console.log("EDITING ID:", editingId);
+    console.table(members);
 
     console.log(
       "EC DITEMUKAN:",
@@ -272,7 +287,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           isExecutiveCommittee(m)
       )
     );
-    
+
     const ok = window.confirm(
       `${editingId ? "Update" : "Tambah"} anggota dengan data berikut?
 
@@ -377,87 +392,102 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           Periode aktif: <b>{activePeriod}</b>
         </p>
 
-        <form onSubmit={onSubmit} className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <form onSubmit={onSubmit} className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
           <label className={ui.label}>Nama Lengkap *</label>
-          <input
-            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
-            placeholder="Nama lengkap"
-            value={form.name}
-            onChange={(e) => onChange("name", e.target.value)}
-          />
+          <div className="space-y-2">
+            <label className={ui.label}>Nama Lengkap *</label>
+            <input
+              className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
+              placeholder="Nama lengkap"
+              value={form.name}
+              onChange={(e) => onChange("name", e.target.value)}
+            />
+          </div>
 
-          <label className={ui.label}>Divisi *</label>
-          <select
-            className={cx(
-              ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
-              theme === "dark"
-                ? "bg-slate-900 text-slate-100"
-                : "bg-white text-slate-900"
-            )}
-            value={form.divisi}
-            onChange={(e) => onChange("divisi", e.target.value)}
-          >
-            <option value="">Pilih Divisi</option>
+          <div className="space-y-2">
+            <label className={ui.label}>Divisi *</label>
+            <select
+              className={cx(
+                ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
+                theme === "dark"
+                  ? "bg-slate-900 text-slate-100"
+                  : "bg-white text-slate-900"
+              )}
+              value={form.divisi}
+              onChange={(e) => onChange("divisi", e.target.value)}
+            >
+              <option value="">Pilih Divisi</option>
 
-            {DIVISIONS.map((d) => (
-              <option key={d.code} value={d.code}>
-                {d.label}
+              {DIVISIONS.map((d) => (
+                <option key={d.code} value={d.code}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className={ui.label}>Login ID</label>
+            <input
+              className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
+              placeholder="Login ID"
+              value={form.loginId}
+              readOnly
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className={ui.label}>Jabatan/Role</label>
+            <select
+              className={cx(
+                ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
+                theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
+              )}
+              value={form.position}
+              onChange={(e) => onChange("position", e.target.value)}
+            >
+              <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
+                Staff
               </option>
-            ))}
-          </select>
-
-          <label className={ui.label}>Login ID</label>
-          <input
-            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
-            placeholder="Login ID"
-            value={form.loginId}
-            readOnly
-          />
-
-          <label className={ui.label}>Jabatan/Role</label>
-          <select
-            className={cx(
-              ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
-              theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
-            )}
-            value={form.position}
-            onChange={(e) => onChange("position", e.target.value)}
-          >
-            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
-              Staff
-            </option>
-            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
-              Executive Committee
-            </option>
-          </select>
-
-          <label className={ui.label}>Tahun Angkatan</label>
-          <input
-            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
-            placeholder="Tahun Angkatan"
-            value={form.tahunAngkatan}
-            onChange={(e) => onChange("tahunAngkatan", e.target.value)}
-          />
-
-          <label className={ui.label}>Periode</label>
-          <select
-            className={cx(
-              ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
-              theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
-            )}
-            value={form.periodId}
-            onChange={(e) => onChange("periodId", e.target.value)}
-          >
-            {periods.map((p) => (
-              <option
-                key={p.id}
-                value={String(p.id)}
-                className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}
-              >
-                {p.label || `Periode ${p.id}`}
+              <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
+                Executive Committee
               </option>
-            ))}
-          </select>
+            </select>
+            </div>
+
+
+          <div className="space-y-2">
+            <label className={ui.label}>Tahun Angkatan</label>
+            <input
+              className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
+              placeholder="Tahun Angkatan"
+              value={form.tahunAngkatan}
+              onChange={(e) => onChange("tahunAngkatan", e.target.value)}
+            />
+          </div>
+
+
+          <div className="space-y-2">
+            <label className={ui.label}>Periode</label>
+            <select
+              className={cx(
+                ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
+                theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
+              )}
+              value={form.periodId}
+              onChange={(e) => onChange("periodId", e.target.value)}
+            >
+              {periods.map((p) => (
+                <option
+                  key={p.id}
+                  value={String(p.id)}
+                  className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}
+                >
+                  {p.label || `Periode ${p.id}`}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="md:col-span-2 flex flex-wrap gap-3">
             <button
