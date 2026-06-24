@@ -175,9 +175,17 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     }));
   }
 
-  function detectIsEC(position) {
-    const lower = String(position || "").trim().toLowerCase();
-    return lower === "executive committee";
+  function isExecutiveCommittee(member) {
+    const pos = String(member?.position || "")
+      .trim()
+      .toLowerCase();
+
+    return (
+      pos === "executive committee" ||
+      pos === "lead" ||
+      pos === "vice lead" ||
+      member?.isEC === true
+    );
   }
 
   async function onSubmit(e) {
@@ -200,17 +208,15 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
         (m) =>
           !m.archived &&
           m.id !== editingId &&
-          m.divisi === form.divisi &&
           String(m.periodId) === String(form.periodId) &&
-          (
-            String(m.position).toLowerCase() === "executive committee" ||
-            m.isEC
-          )
+          String(m.divisi).toLowerCase() ===
+            String(form.divisi).toLowerCase() &&
+          isExecutiveCommittee(m)
       );
 
       if (existingEC) {
         return setError(
-          `Divisi ${form.divisi} sudah memiliki Executive Committee (${existingEC.name}).`
+          `Divisi ${displayDivision(form.divisi)} sudah memiliki Executive Committee (${existingEC.name}).`
         );
       }
     }
@@ -218,31 +224,34 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     const payload = {
       ...form,
       loginId: form.loginId.trim().toLowerCase(),
-      isEC: detectIsEC(form.position),
+      isEC:
+        String(form.position).toLowerCase() ===
+        "executive committee",
       periodId: form.periodId || activePeriod,
     };
 
-    if (payload.position === "Executive Committee") {
+    if (payload.isEC) {
       const existingEC = members.find((m) => {
         if (editingId && m.id === editingId) return false;
 
         return (
+          !m.archived &&
           String(m.periodId) === String(payload.periodId) &&
           String(m.divisi).toLowerCase() ===
             String(payload.divisi).toLowerCase() &&
-          String(m.position).toLowerCase() ===
-            "executive committee"
+          isExecutiveCommittee(m)
         );
       });
 
       if (existingEC) {
         setError(
-          `Divisi ${payload.divisi} sudah memiliki Executive Committee (${existingEC.name})`
+          `Divisi ${displayDivision(payload.divisi)} sudah memiliki Executive Committee (${existingEC.name})`
         );
         return;
       }
     }
 
+    console.log("MEMBERS", members);
     const ok = window.confirm(
       `${editingId ? "Update" : "Tambah"} anggota dengan data berikut?
 
