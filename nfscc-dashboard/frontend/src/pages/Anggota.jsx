@@ -222,6 +222,27 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
       periodId: form.periodId || activePeriod,
     };
 
+    if (payload.position === "Executive Committee") {
+      const existingEC = members.find((m) => {
+        if (editingId && m.id === editingId) return false;
+
+        return (
+          String(m.periodId) === String(payload.periodId) &&
+          String(m.divisi).toLowerCase() ===
+            String(payload.divisi).toLowerCase() &&
+          String(m.position).toLowerCase() ===
+            "executive committee"
+        );
+      });
+
+      if (existingEC) {
+        setError(
+          `Divisi ${payload.divisi} sudah memiliki Executive Committee (${existingEC.name})`
+        );
+        return;
+      }
+    }
+
     const ok = window.confirm(
       `${editingId ? "Update" : "Tambah"} anggota dengan data berikut?
 
