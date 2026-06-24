@@ -12,6 +12,16 @@ function cx(...arr) {
   return arr.filter(Boolean).join(" ");
 }
 
+function displayPosition(position) {
+  const p = String(position || "").toLowerCase();
+
+  if (p === "lead" || p === "vice lead") {
+    return "Executive Committee";
+  }
+
+  return position;
+}
+
 export default function AnggotaPage({ state, setState, theme, ui }) {
   const activePeriod = String(
     state?.activePeriod ??
@@ -120,7 +130,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
 
   function detectIsEC(position) {
     const lower = String(position || "").trim().toLowerCase();
-    return ["lead", "vice lead", "executive committee"].includes(lower);
+    return lower === "executive committee";
   }
 
   async function onSubmit(e) {
@@ -131,6 +141,32 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     if (!form.loginId.trim()) return setError("Login ID wajib diisi.");
     if (!form.divisi.trim()) return setError("Divisi wajib diisi.");
     if (!form.position.trim()) return setError("Posisi/Jabatan wajib diisi.");
+
+    if (form.position === "Admin") {
+      return setError(
+        "Role Admin tidak dapat dibuat dari halaman anggota."
+      );
+    }
+
+    if (form.position === "Executive Committee") {
+      const existingEC = members.find(
+        (m) =>
+          !m.archived &&
+          m.id !== editingId &&
+          m.divisi === form.divisi &&
+          String(m.periodId) === String(form.periodId) &&
+          (
+            String(m.position).toLowerCase() === "executive committee" ||
+            m.isEC
+          )
+      );
+
+      if (existingEC) {
+        return setError(
+          `Divisi ${form.divisi} sudah memiliki Executive Committee (${existingEC.name}).`
+        );
+      }
+    }
 
     const payload = {
       ...form,
@@ -279,15 +315,6 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
             <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
               Executive Committee
             </option>
-            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
-              Vice Lead
-            </option>
-            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
-              Lead
-            </option>
-            <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
-              Admin
-            </option>
           </select>
 
           <input
@@ -410,7 +437,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
                     </td>
                     <td className="px-3 py-2">{member.loginId}</td>
                     <td className="px-3 py-2">{member.divisi}</td>
-                    <td className="px-3 py-2">{member.position}</td>
+                    <td className="px-3 py-2">{displayPosition(member.position)}</td>
                     <td className="px-3 py-2">{member.tahunAngkatan || "-"}</td>
                     <td className="px-3 py-2">
                       <div className="flex gap-2">
@@ -450,7 +477,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
 
                 <div className="text-sm">
                   <div><b>Divisi:</b> {member.divisi}</div>
-                  <div><b>Jabatan:</b> {member.position}</div>
+                  <div><b>Jabatan:</b> {displayPosition(member.position)}</div>
                   <div><b>Angkatan:</b> {member.tahunAngkatan || "-"}</div>
                 </div>
 

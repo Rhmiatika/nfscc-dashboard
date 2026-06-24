@@ -143,8 +143,11 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
   const role = String(state?.session?.role || "").toLowerCase();
 
-  const canRestoreArchive = isAuthed;
-  const canManageArchive = isAuthed && role === "admin";
+  const canRestoreArchive =
+    isAuthed && ["admin", "ec"].includes(role);
+
+  const canManageArchive =
+    isAuthed && ["admin", "ec"].includes(role);
   const canViewLoginId = isAuthed && (role === "admin" || role === "ec");
   const activePeriodId = String(
     state?.activePeriodId ||
@@ -663,7 +666,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                           {getPicName(form.pic)}
                         </option>
                       )}
-                      
+
                     {[...(state?.members || []), ...(archivedMembers || [])]
                       .filter(
                         (m, i, arr) =>
