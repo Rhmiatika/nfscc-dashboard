@@ -22,6 +22,14 @@ function displayPosition(position) {
   return position;
 }
 
+function displayDivision(divisi) {
+  const found = DIVISIONS.find(
+    (d) => d.code === String(divisi || "").toLowerCase()
+  );
+
+  return found ? found.label : divisi;
+}
+
 const DIVISIONS = [
   { label: "Public Relation", code: "pr" },
   { label: "Human Resource Development", code: "hrd" },
