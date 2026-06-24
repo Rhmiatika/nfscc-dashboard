@@ -393,7 +393,6 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <label className={ui.label}>Nama Lengkap *</label>
           <div className="space-y-2">
             <label className={ui.label}>Nama Lengkap *</label>
             <input
