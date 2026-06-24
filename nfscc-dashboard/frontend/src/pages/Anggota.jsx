@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getPeriods } from "../storage";
+import { getPeriods, getPeriodMeta } from "../storage";
 import {
   listMembersApi,
   createMemberApi,
@@ -22,6 +22,29 @@ function displayPosition(position) {
   return position;
 }
 
+const DIVISIONS = [
+  { label: "Public Relation", code: "pr" },
+  { label: "Human Resource Development", code: "hrd" },
+  { label: "Research and Education", code: "rne" },
+  { label: "Creative Media & Documentation", code: "cmd" },
+  { label: "Treasurer", code: "treas" },
+  { label: "Secretary", code: "secre" },
+  { label: "Lead", code: "lead" },
+  { label: "Vice Lead", code: "vicelead" },
+];
+
+function generateLoginId(name, divisi, domain) {
+  if (!name || !divisi) return "";
+
+  const firstName = name
+    .trim()
+    .split(" ")[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  return `${firstName}.${divisi}@${domain}`;
+}
+
 export default function AnggotaPage({ state, setState, theme, ui }) {
   const activePeriod = String(
     state?.activePeriod ??
@@ -29,6 +52,9 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     state?.session?.period ??
     "2026"
   );
+
+  const activeDomain =
+    getPeriodMeta(activePeriod)?.domain || "nfcc";
 
   const role = String(state?.session?.role || "staff").toLowerCase();
   const canManage = role === "admin" || role === "ec";
@@ -102,6 +128,19 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
     if (!canManage) return;
     loadMembers();
   }, [activePeriod, canManage]);
+
+  useEffect(() => {
+    const loginId = generateLoginId(
+      form.name,
+      form.divisi,
+      activeDomain
+    );
+
+    setForm((prev) => ({
+      ...prev,
+      loginId,
+    }));
+  }, [form.name, form.divisi, activeDomain]);
 
   function resetForm() {
     setEditingId(null);
@@ -280,6 +319,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <label className={ui.label}>Nama Lengkap *</label>
           <input
             className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
             placeholder="Nama lengkap"
@@ -287,20 +327,35 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
             onChange={(e) => onChange("name", e.target.value)}
           />
 
-          <input
-            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
-            placeholder="Login ID / Email"
-            value={form.loginId}
-            onChange={(e) => onChange("loginId", e.target.value)}
-          />
-
-          <input
-            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
-            placeholder="Divisi"
+          <label className={ui.label}>Divisi *</label>
+          <select
+            className={cx(
+              ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
+              theme === "dark"
+                ? "bg-slate-900 text-slate-100"
+                : "bg-white text-slate-900"
+            )}
             value={form.divisi}
             onChange={(e) => onChange("divisi", e.target.value)}
+          >
+            <option value="">Pilih Divisi</option>
+
+            {DIVISIONS.map((d) => (
+              <option key={d.code} value={d.code}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+
+          <label className={ui.label}>Login ID</label>
+          <input
+            className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
+            placeholder="Login ID"
+            value={form.loginId}
+            readOnly
           />
 
+          <label className={ui.label}>Jabatan/Role</label>
           <select
             className={cx(
               ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
@@ -317,6 +372,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
             </option>
           </select>
 
+          <label className={ui.label}>Tahun Angkatan</label>
           <input
             className={ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm"}
             placeholder="Tahun Angkatan"
@@ -324,6 +380,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
             onChange={(e) => onChange("tahunAngkatan", e.target.value)}
           />
 
+          <label className={ui.label}>Periode</label>
           <select
             className={cx(
               ui?.input || "w-full rounded-2xl border px-4 py-3 text-sm",
@@ -436,7 +493,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
                       </div>
                     </td>
                     <td className="px-3 py-2">{member.loginId}</td>
-                    <td className="px-3 py-2">{member.divisi}</td>
+                    <td className="px-3 py-2">{displayDivision(member.divisi)}</td>
                     <td className="px-3 py-2">{displayPosition(member.position)}</td>
                     <td className="px-3 py-2">{member.tahunAngkatan || "-"}</td>
                     <td className="px-3 py-2">
@@ -476,7 +533,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
                 </div>
 
                 <div className="text-sm">
-                  <div><b>Divisi:</b> {member.divisi}</div>
+                  <div><b>Divisi:</b> {displayDivision(member.divisi)}</div>
                   <div><b>Jabatan:</b> {displayPosition(member.position)}</div>
                   <div><b>Angkatan:</b> {member.tahunAngkatan || "-"}</div>
                 </div>
