@@ -258,7 +258,21 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
       }
     }
 
-    console.log("MEMBERS", members);
+    console.log("EDITING ID:", editingId);
+
+    console.log(
+      "EC DITEMUKAN:",
+      members.find(
+        (m) =>
+          !m.archived &&
+          m.id !== editingId &&
+          String(m.periodId) === String(form.periodId) &&
+          String(m.divisi).toLowerCase() ===
+            String(form.divisi).toLowerCase() &&
+          isExecutiveCommittee(m)
+      )
+    );
+    
     const ok = window.confirm(
       `${editingId ? "Update" : "Tambah"} anggota dengan data berikut?
 
