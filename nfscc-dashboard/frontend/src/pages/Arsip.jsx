@@ -37,6 +37,21 @@ function getPicDisplayName(loginId, memberMap) {
 const DIVISI_ALIASES = {
   "r&e": "research and education",
   "research and education": "research and education",
+
+  "pr": "public relation",
+  "public relation": "public relation",
+  "public relations": "public relation",
+
+  "hrd": "human resource development",
+  "human resource development": "human resource development",
+
+  "cmd": "creative media & documentation",
+  "creative media & documentation": "creative media & documentation",
+  "creative media and documentation": "creative media & documentation",
+
+  "lead": "lead",
+  "secretary": "secretary",
+  "treasurer": "treasurer",
 };
 
 function normalizeDivisiName(value) {
@@ -52,6 +67,21 @@ function normalizeDivisiForSelect(value) {
     v === "r&e"
   ) {
     return "R&E";
+  }
+
+  if (v === "public relation") {
+    return "PR";
+  }
+
+  if (v === "human resource development") {
+    return "HRD";
+  }
+
+  if (
+    v === "creative media & documentation" ||
+    v === "creative media and documentation"
+  ) {
+    return "CMD";
   }
 
   return value;
@@ -510,16 +540,31 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         ...(archivedMembers || []),
       ];
 
-      return allMembers
-        .filter(
-          (m) =>
-            normalizeDivisiName(m?.divisi) === selectedDiv
-        )
-        .sort((a, b) =>
-          String(a?.name || "").localeCompare(
-            String(b?.name || "")
-          )
-        );
+      console.log("=== DEBUG PIC ===");
+      console.log("Divisi Proker :", form.divisi);
+      console.log("Divisi Normal :", selectedDiv);
+      console.table(
+        allMembers.map((m) => ({
+          nama: m.name,
+          divisi: m.divisi,
+          loginId: m.loginId,
+        }))
+      );
+
+      const filtered = allMembers.filter(
+        (m) => normalizeDivisiName(m?.divisi) === selectedDiv
+      );
+
+      console.table(
+        filtered.map((m) => ({
+          nama: m.name,
+          divisi: m.divisi,
+        }))
+      );
+
+      return filtered.sort((a, b) =>
+        String(a?.name || "").localeCompare(String(b?.name || ""))
+      );
     }, [state?.members, archivedMembers, form.divisi]);
 
     useEffect(() => {
