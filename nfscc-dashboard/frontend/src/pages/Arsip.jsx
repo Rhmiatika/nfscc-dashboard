@@ -551,8 +551,12 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         }))
       );
 
+      const currentPeriod = String(form.periodId || item?.periodId || "");
+
       const filtered = allMembers.filter(
-        (m) => normalizeDivisiName(m?.divisi) === selectedDiv
+        (m) =>
+          normalizeDivisiName(m?.divisi) === selectedDiv &&
+          String(m?.periodId || "") === currentPeriod
       );
 
       console.table(
@@ -565,7 +569,13 @@ export default function ArsipPage({ state, setState, theme, ui }) {
       return filtered.sort((a, b) =>
         String(a?.name || "").localeCompare(String(b?.name || ""))
       );
-    }, [state?.members, archivedMembers, form.divisi]);
+    }, [
+      state?.members,
+      archivedMembers,
+      form.divisi,
+      form.periodId,
+      item?.periodId,
+    ]);
 
     useEffect(() => {
       if (item) {
@@ -714,10 +724,18 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
                     {[...(state?.members || []), ...(archivedMembers || [])]
                       .filter(
+                        (m) =>
+                          String(m.periodId || "") ===
+                          String(form.periodId || item.periodId)
+                      )
+                      .filter(
                         (m, i, arr) =>
                           arr.findIndex(
                             (x) => x.loginId === m.loginId
                           ) === i
+                      )
+                      .sort((a, b) =>
+                        String(a.name || "").localeCompare(String(b.name || ""))
                       )
                       .map((member) => (
                         <option
@@ -798,18 +816,23 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                     value={form.pic || ""}
                     onChange={(e) => handleChange("pic", e.target.value)}
                   >
-                    {picOptions.length === 0 ? (
-                      <option value="">Belum ada anggota</option>
-                    ) : (
-                      picOptions.map((m) => (
-                        <option
-                          key={m.loginId}
-                          value={m.loginId}
-                        >
-                          {m.name}
+                    <option value="">Pilih PIC</option>
+
+                    {form.pic &&
+                      !picOptions.some((m) => m.loginId === form.pic) && (
+                        <option value={form.pic}>
+                          {getPicName(form.pic)} (anggota periode lain)
                         </option>
-                      ))
-                    )}
+                      )}
+
+                    {picOptions.map((m) => (
+                      <option
+                        key={m.loginId}
+                        value={m.loginId}
+                      >
+                        {m.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -833,11 +856,15 @@ export default function ArsipPage({ state, setState, theme, ui }) {
 
                 <div className="xl:col-span-4">
                   <label className={ui.label}>Status Proker *</label>
-                  <input
-                    className={ui.input}
+
+                  <select
+                    className={ui.select || ui.input}
                     value={form.status || ""}
                     onChange={(e) => handleChange("status", e.target.value)}
-                  />
+                  >
+                    <option value="Perencanaan">Perencanaan</option>
+                    <option value="Selesai">Selesai</option>
+                  </select>
                 </div>
 
                 <div className="xl:col-span-4">
