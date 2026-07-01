@@ -23,7 +23,7 @@ class MemberController extends Controller
             'tahunAngkatan' => $member->tahun_angkatan,
             'isEC' => (bool) $member->is_ec,
             'periodId' => (string) ($member->periode ?? ''),
-            'photo' => $member->foto,
+            'photo' => '',
             'isActive' => true,
             'archived' => (bool) $member->archived,
             'archivedAt' => $member->archived_at,

@@ -30,6 +30,23 @@ function displayDivision(divisi) {
   return found ? found.label : divisi;
 }
 
+function normalizeDivision(divisi) {
+  const value = String(divisi || "").trim().toLowerCase();
+
+  const map = {
+    "public relation": "pr",
+    "human resource development": "hrd",
+    "research and education": "rne",
+    "creative media & documentation": "cmd",
+    "treasurer": "treas",
+    "secretary": "secre",
+    "lead": "lead",
+    "vice lead": "vicelead",
+  };
+
+  return map[value] || value;
+}
+
 const DIVISIONS = [
   { label: "Public Relation", code: "pr" },
   { label: "Human Resource Development", code: "hrd" },
@@ -222,8 +239,8 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
         (m) =>
           !m.archived &&
           m.id !== editingId &&
-          String(m.divisi).toLowerCase() ===
-            String(form.divisi).toLowerCase() &&
+          normalizeDivision(m.divisi) ===
+            normalizeDivision(form.divisi) &&
           isExecutiveCommittee(m)
       );
 
@@ -248,8 +265,8 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
         "DATA MEMBER DIVISI",
         members.filter(
           m =>
-            String(m.divisi).toLowerCase() ===
-            String(form.divisi).toLowerCase()
+            normalizeDivision(m.divisi) ===
+            normalizeDivision(form.divisi)
         )
       );
       const existingEC = members.find((m) => {
@@ -258,8 +275,8 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
         return (
           !m.archived &&
           String(m.periodId) === String(payload.periodId) &&
-          String(m.divisi).toLowerCase() ===
-            String(payload.divisi).toLowerCase() &&
+          normalizeDivision(m.divisi) ===
+            normalizeDivision(payload.divisi) &&
           isExecutiveCommittee(m)
         );
       });
@@ -282,8 +299,8 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
           !m.archived &&
           m.id !== editingId &&
           String(m.periodId) === String(form.periodId) &&
-          String(m.divisi).toLowerCase() ===
-            String(form.divisi).toLowerCase() &&
+          normalizeDivision(m.divisi) ===
+            normalizeDivision(form.divisi) &&
           isExecutiveCommittee(m)
       )
     );
