@@ -494,7 +494,7 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
             </select>
             {(form.divisi === "lead" || form.divisi === "vicelead") && (
               <p className="text-xs text-gray-500 mt-1">
-                Lead dan Vice Lead otomatis memiliki role Executive Committee.
+                Lead dan Vice Lead otomatis terisi role Executive Committee.
               </p>
             )}
             </div>
