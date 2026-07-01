@@ -186,6 +186,18 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
   }
 
   function onChange(field, value) {
+    if (field === "divisi") {
+      setForm((prev) => ({
+        ...prev,
+        divisi: value,
+        position:
+          value === "lead" || value === "vicelead"
+            ? "Executive Committee"
+            : prev.position,
+      }));
+      return;
+    }
+
     setForm((prev) => ({
       ...prev,
       [field]: value,
@@ -251,11 +263,18 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
       }
     }
 
+    const finalPosition =
+      form.divisi === "lead" ||
+      form.divisi === "vicelead"
+        ? "Executive Committee"
+        : form.position;
+
     const payload = {
       ...form,
+      position: finalPosition,
       loginId: form.loginId.trim().toLowerCase(),
       isEC:
-        String(form.position).toLowerCase() ===
+        String(finalPosition).toLowerCase() ===
         "executive committee",
       periodId: form.periodId || activePeriod,
     };
@@ -460,6 +479,10 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
                 theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
               )}
               value={form.position}
+              disabled={
+                form.divisi === "lead" ||
+                form.divisi === "vicelead"
+              }
               onChange={(e) => onChange("position", e.target.value)}
             >
               <option className={theme === "dark" ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"}>
@@ -469,6 +492,11 @@ export default function AnggotaPage({ state, setState, theme, ui }) {
                 Executive Committee
               </option>
             </select>
+            {(form.divisi === "lead" || form.divisi === "vicelead") && (
+              <p className="text-xs text-gray-500 mt-1">
+                Lead dan Vice Lead otomatis memiliki role Executive Committee.
+              </p>
+            )}
             </div>
 
 
