@@ -678,7 +678,20 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     if (!open || !item) return null;
 
     function handleChange(key, value) {
-      setForm((prev) => ({ ...prev, [key]: value }));
+      setForm((prev) => {
+        if (key === "divisi") {
+          return {
+            ...prev,
+            divisi: value,
+            pic: "",
+          };
+        }
+
+        return {
+          ...prev,
+          [key]: value,
+        };
+      });
     }
 
     function handleSubmit(e) {
@@ -707,6 +720,34 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           alert("Semua field bertanda * wajib diisi.");
           return;
         }
+      }
+
+      const selectedDiv = normalizeDivisiName(form.divisi);
+      const currentPeriod = String(form.periodId || item.periodId || "");
+
+      const allMembers = [
+        ...(state?.members || []),
+        ...(archivedMembers || []),
+      ];
+
+      const selectedPicMember = allMembers.find(
+        (m) => String(m?.loginId || "") === String(form.pic || "")
+      );
+
+      if (!selectedPicMember) {
+        alert("PIC yang dipilih tidak ditemukan.");
+        return;
+      }
+
+      const isPicMatchDivision =
+        normalizeDivisiName(selectedPicMember?.divisi) === selectedDiv;
+
+      const isPicMatchPeriod =
+        String(selectedPicMember?.periodId || "") === currentPeriod;
+
+      if (!isPicMatchDivision || !isPicMatchPeriod) {
+        alert("PIC harus berasal dari divisi dan periode yang sama dengan proker.");
+        return;
       }
 
       if (item.category === "anggota") {
