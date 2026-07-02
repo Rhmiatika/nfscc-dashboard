@@ -540,6 +540,68 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         ...(archivedMembers || []),
       ];
 
+    const currentPicMeta = useMemo(() => {
+      if (!form.pic) return null;
+
+      const allMembers = [
+        ...(state?.members || []),
+        ...(archivedMembers || []),
+      ];
+
+      const selectedDiv = normalizeDivisiName(form.divisi);
+      const currentPeriod = String(form.periodId || item?.periodId || "");
+
+      const member = allMembers.find(
+        (m) => String(m?.loginId || "") === String(form.pic || "")
+      );
+
+      if (!member) {
+        return {
+          exists: false,
+          label: "anggota tidak ditemukan",
+        };
+      }
+
+      const samePeriod =
+        String(member?.periodId || "") === currentPeriod;
+
+      const sameDivision =
+        normalizeDivisiName(member?.divisi) === selectedDiv;
+
+      if (samePeriod && sameDivision) {
+        return {
+          exists: true,
+          label: "",
+        };
+      }
+
+      if (samePeriod && !sameDivision) {
+        return {
+          exists: true,
+          label: "divisi lain",
+        };
+      }
+
+      if (!samePeriod && sameDivision) {
+        return {
+          exists: true,
+          label: "periode lain",
+        };
+      }
+
+      return {
+        exists: true,
+        label: "divisi & periode lain",
+      };
+    }, [
+      form.pic,
+      form.divisi,
+      form.periodId,
+      item?.periodId,
+      state?.members,
+      archivedMembers,
+    ]);
+
       console.log("=== DEBUG PIC ===");
       console.log("Divisi Proker :", form.divisi);
       console.log("Divisi Normal :", selectedDiv);
@@ -821,7 +883,8 @@ export default function ArsipPage({ state, setState, theme, ui }) {
                     {form.pic &&
                       !picOptions.some((m) => m.loginId === form.pic) && (
                         <option value={form.pic}>
-                          {getPicName(form.pic)} (anggota periode lain)
+                          {getPicName(form.pic)}
+                          {currentPicMeta?.label ? ` (${currentPicMeta.label})` : ""}
                         </option>
                       )}
 
