@@ -532,13 +532,6 @@ export default function ArsipPage({ state, setState, theme, ui }) {
     state,
   }) {
     const [form, setForm] = useState({});
-    const picOptions = useMemo(() => {
-      const selectedDiv = normalizeDivisiName(form.divisi);
-
-      const allMembers = [
-        ...(state?.members || []),
-        ...(archivedMembers || []),
-      ];
 
     const currentPicMeta = useMemo(() => {
       if (!form.pic) return null;
@@ -602,6 +595,14 @@ export default function ArsipPage({ state, setState, theme, ui }) {
       archivedMembers,
     ]);
 
+    const picOptions = useMemo(() => {
+      const selectedDiv = normalizeDivisiName(form.divisi);
+
+      const allMembers = [
+        ...(state?.members || []),
+        ...(archivedMembers || []),
+      ];
+
       console.log("=== DEBUG PIC ===");
       console.log("Divisi Proker :", form.divisi);
       console.log("Divisi Normal :", selectedDiv);
@@ -610,6 +611,7 @@ export default function ArsipPage({ state, setState, theme, ui }) {
           nama: m.name,
           divisi: m.divisi,
           loginId: m.loginId,
+          periodId: m.periodId,
         }))
       );
 
@@ -625,12 +627,18 @@ export default function ArsipPage({ state, setState, theme, ui }) {
         filtered.map((m) => ({
           nama: m.name,
           divisi: m.divisi,
+          periodId: m.periodId,
         }))
       );
 
-      return filtered.sort((a, b) =>
-        String(a?.name || "").localeCompare(String(b?.name || ""))
-      );
+      return filtered
+        .filter(
+          (m, i, arr) =>
+            arr.findIndex((x) => String(x.loginId) === String(m.loginId)) === i
+        )
+        .sort((a, b) =>
+          String(a?.name || "").localeCompare(String(b?.name || ""))
+        );
     }, [
       state?.members,
       archivedMembers,
